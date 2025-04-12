@@ -22,7 +22,7 @@
 {{else}}
    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">Heroes</a>
+        {{!-- <a class="navbar-brand" href="/">Heroes</a> --}}
         <button
           class="navbar-toggler"
           type="button"
@@ -41,19 +41,19 @@
             </li> --}}
              {{#if (eq userRole 'cliente')}}
                 <li class="nav-item">
-                    <a class="nav-link {{#if homeActive}}active{{/if}}" href="/cliente/home">Home</a>
+                    <a class="nav-link {{#if homeActive}}active{{/if}}" href="/client/home">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/cliente/perfil">Mi perfil</a>
+                    <a class="nav-link" href="/client/perfil">Mi perfil</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/cliente/pedidos">Mis pedidos</a>
+                    <a class="nav-link" href="/client/pedidos">Mis pedidos</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/cliente/direcciones">Mis direcciones</a>
+                    <a class="nav-link" href="/client/direcciones">Mis direcciones</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/cliente/favoritos">Mis favoritos</a>
+                    <a class="nav-link" href="/client/favoritos">Mis favoritos</a>
                 </li>
             {{/if}}
 
