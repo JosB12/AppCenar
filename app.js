@@ -26,6 +26,8 @@ const Configuration = require("./models/Configuration");
 const PORT = 1200;
 const authRouter = require("./routes/auth");
 const customerRouter = require("./routes/customer");
+
+// Controller
 const errorController = require("./controllers/ErrorController");
 //#endregion
 
@@ -260,6 +262,7 @@ User.hasMany(Favorite, {
 });
 //#endregion
 
+// correr para crear base de datos y comentar el siguiente bloque de codigo
 // sequelize
 //   .sync() // Puedes agregar { force: true } si deseas recrear las tablas cada vez (para desarrollo)
 //   .then(() => {
