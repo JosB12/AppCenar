@@ -1,0 +1,26 @@
+<main class="form-signin">
+  <form action="/reset" method="POST">
+    <!-- Token CSRF para protección -->
+    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+    
+    <h1 class="h3 mb-3 fw-normal">Reset password</h1>
+
+    <!-- Campo para ingresar el email -->
+    <div class="form-floating">
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        id="floatingInput"
+        placeholder="name@example.com"
+        required
+      />
+      <label for="floatingInput">Email address</label>
+    </div>
+
+    <!-- Botón para enviar el formulario -->
+    <button class="w-100 btn btn-lg btn-primary margin-top-2" type="submit">Reset</button>
+    <!-- Enlace para volver al login -->
+    <a href="/login" class="w-100 btn btn-lg btn-warning margin-top-2">Back</a>
+  </form>
+</main>
