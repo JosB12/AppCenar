@@ -9,6 +9,8 @@ const flash = require("connect-flash");
 const csrf = require("csurf");
 const csrfProtection = csrf();
 const bodyParser = require("body-parser");
+const { allowInsecurePrototypeAccess } = require("@handlebars/allow-prototype-access");
+const Handlebars = require("handlebars");
 
 //#region Models
 const User = require("./models/User");
@@ -40,6 +42,7 @@ app.engine(
     layoutsDir: "views/layouts/",
     defaultLayout: "main-layout",
     extname: "hbs",
+    handlebars: allowInsecurePrototypeAccess(Handlebars),
     helpers: {
       eq: compareHelpers.eq
 
@@ -59,7 +62,7 @@ const fileStorage = multer.diskStorage({
     cb(null, uuidv4() + "-" + file.originalname);
   },
 });
-app.use(multer({ storage: fileStorage }).single("profilePhoto"));
+app.use(multer({ storage: fileStorage }).any());
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/images", express.static(path.join(__dirname, "images")));

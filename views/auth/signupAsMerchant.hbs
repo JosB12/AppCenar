@@ -1,0 +1,68 @@
+<main class="container">
+  <h1 class="mb-4">Merchant Signup</h1>
+  <form action="/signupAsMerchant" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+
+    <!-- Nombre del comercio -->
+    <div class="mb-3">
+      <label for="merchantName" class="form-label">Merchant Name</label>
+      <input type="text" class="form-control" name="merchantName" id="merchantName" placeholder="Enter your merchant name" required>
+    </div>
+
+    <!-- Teléfono -->
+    <div class="mb-3">
+      <label for="phone" class="form-label">Phone</label>
+      <input type="text" class="form-control" name="phone" id="phone" placeholder="Enter your phone number" required>
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+      <label for="email" class="form-label">Email address</label>
+      <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com" required>
+    </div>
+
+    <!-- Logo del comercio -->
+    <div class="mb-3">
+      <label for="merchantLogo" class="form-label">Merchant Logo</label>
+      <input type="file" class="form-control" name="merchantLogo" id="merchantLogo">
+    </div>
+
+    <!-- Hora de apertura -->
+    <div class="mb-3">
+      <label for="openingTime" class="form-label">Opening Time</label>
+      <input type="time" class="form-control" name="openingTime" id="openingTime" required>
+    </div>
+
+    <!-- Hora de cierre -->
+    <div class="mb-3">
+      <label for="closingTime" class="form-label">Closing Time</label>
+      <input type="time" class="form-control" name="closingTime" id="closingTime" required>
+    </div>
+
+    <!-- Tipo de comercio -->
+    <div class="mb-3">
+      <label for="merchantType" class="form-label">Merchant Type</label>
+      <select class="form-select" name="merchantType" id="merchantType" required>
+        {{#each merchantTypes}}
+          <option value="{{this.id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <!-- Contraseña -->
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" name="password" id="password" placeholder="Enter password" required>
+    </div>
+
+    <!-- Confirmar contraseña -->
+    <div class="mb-3">
+      <label for="confirmPassword" class="form-label">Confirm Password</label>
+      <input type="password" class="form-control" name="confirmPassword" id="confirmPassword" placeholder="Confirm password" required>
+    </div>
+
+    <!-- Botón para registrar el merchant -->
+    <button type="submit" class="btn btn-primary w-100">Signup as Merchant</button>
+    <a href="/login" class="btn btn-warning w-100 mt-2">Back to Login</a>
+  </form>
+</main>
