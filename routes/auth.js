@@ -20,6 +20,13 @@ router.get("/signup", authController.GetSignup);
 // Ruta para procesar el registro (Signup)
 router.post("/signup", authController.PostSignup);
 
+// Rutas para registro de merchant
+router.get("/signupAsMerchant", authController.GetMerchantSignup);
+router.post("/signupAsMerchant", authController.PostMerchantSignup);
+
+router.get("/activate/:token", authController.GetActivate);
+
+
 //#endregion
 
 //#region reset password

@@ -76,7 +76,12 @@ const User = sequelize.define("user", {
   merchantTypeId: {
     type: Sequelize.INTEGER,
     allowNull: true,
-  }
+  },
+  activationToken: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
+  
 });
 
 module.exports = User;
