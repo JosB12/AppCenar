@@ -1,0 +1,29 @@
+<main class="container">
+  <h1 class="mb-4">{{pageTitle}}</h1>
+
+  {{#if orders.length}}
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Date</th>
+          <!-- Puedes agregar más columnas según necesites -->
+        </tr>
+      </thead>
+      <tbody>
+        {{#each orders}}
+          <tr>
+            <td>{{this.id}}</td>
+            <td>{{this.status}}</td>
+            <td>{{this.total}}</td>
+            <td>{{this.orderDateTime}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <p>No orders found.</p>
+  {{/if}}
+</main>
