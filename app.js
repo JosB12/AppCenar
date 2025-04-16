@@ -27,6 +27,7 @@ const Configuration = require("./models/Configuration");
 //#region Routes & Controllers
 const PORT = 1200;
 const authRouter = require("./routes/auth");
+const merchantRouter = require("./routes/merchants");
 const customerRouter = require("./routes/customer");
 
 // Controller
@@ -118,6 +119,7 @@ app.get("/", (req, res, next) => {
 // Monta las rutas de autenticación
 app.use(authRouter);
 app.use("/customer",customerRouter);
+app.use("/merchant",merchantRouter);
 
 // Middleware para manejar rutas no encontradas (404)
 app.use(errorController.Get404);
