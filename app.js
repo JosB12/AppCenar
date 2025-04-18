@@ -52,6 +52,10 @@ app.engine(
 );
 app.set("view engine", "hbs");
 app.set("views", "views");
+const hbs = require("hbs");
+hbs.registerHelper("eq", (a, b) => a === b);
+
+
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -221,6 +225,7 @@ OrderProduct.belongsTo(Order, {
 });
 Order.hasMany(OrderProduct, {
   foreignKey: "orderId",
+  as: "order_products", // 
 });
 // OrderProduct se asocia a Product
 OrderProduct.belongsTo(Product, {
@@ -266,6 +271,8 @@ User.hasMany(Favorite, {
   foreignKey: "merchantId",
 });
 //#endregion
+
+
 
 // correr para crear base de datos y comentar el siguiente bloque de codigo
 // sequelize

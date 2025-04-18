@@ -1,0 +1,47 @@
+<main class="container mt-5">
+  <div class="card shadow p-4">
+    <div class="d-flex align-items-center mb-3">
+      {{#if order.merchant.merchantLogo}}
+        <img src="/images/{{order.merchant.merchantLogo}}" alt="Logo" width="50" class="rounded-circle mr-3">
+      {{/if}}
+      <h4 class="mb-0">{{order.merchant.merchantName}}</h4>
+    </div>
+
+    <div class="mb-3">
+      <span class="badge 
+        {{#if (eq order.status 'pending')}}badge-warning
+        {{else if (eq order.status 'processing')}}badge-info
+        {{else}}badge-success{{/if}}">
+        {{order.status}}
+      </span>
+      <p class="mb-0 text-muted">{{order.formattedDate}} - {{order.formattedTime}}</p>
+    </div>
+
+    <h5>El pedido</h5>
+    <ul class="list-group mb-3">
+      {{#each order.order_products}}
+        <li class="list-group-item d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            {{#if this.product.image}}
+              <img src="/images/{{this.product.image}}" width="50" class="rounded mr-3">
+            {{/if}}
+            <span>{{this.product.name}}</span>
+          </div>
+          <strong>RD$ {{this.product.price}}</strong>
+        </li>
+      {{/each}}
+    </ul>
+
+    <div class="d-flex justify-content-between">
+      <h5>Total</h5>
+      <h5>RD$ {{order.total}}</h5>
+    </div>
+
+    {{#if (eq order.status 'pending')}}
+      <form action="/merchant/orders/{{order.id}}/assign" method="POST">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <button class="btn btn-danger btn-block mt-3">Asignar delivery</button>
+      </form>
+    {{/if}}
+  </div>
+</main>

@@ -1,29 +1,57 @@
-<main class="container">
-  <h1 class="mb-4">{{pageTitle}}</h1>
+<main class="container mt-5">
+  <h2 class="mb-4 text-center">{{pageTitle}}</h2>
 
   {{#if orders.length}}
-    <table class="table table-bordered">
-      <thead>
+    <table class="table table-bordered table-striped shadow-sm">
+      <thead class="thead-dark">
         <tr>
-          <th>Order ID</th>
-          <th>Status</th>
+          <th># Pedido</th>
+          <th>Comercio</th>
+          <th>Logo</th>
+          <th>Estado</th>
           <th>Total</th>
-          <th>Date</th>
-          <!-- Puedes agregar más columnas según necesites -->
+          <th>Productos</th>
+          <th>Fecha</th>
+          <th>Hora</th>
         </tr>
       </thead>
       <tbody>
         {{#each orders}}
-          <tr>
-            <td>{{this.id}}</td>
-            <td>{{this.status}}</td>
-            <td>{{this.total}}</td>
-            <td>{{this.orderDateTime}}</td>
+          <tr class="clickable-row" onclick="window.location='/merchant/orders/{{this.id}}'">
+            <td><strong>#{{this.id}}</strong></td>
+            <td>{{this.merchant.merchantName}}</td>
+            <td>
+              {{#if this.merchant.merchantLogo}}
+                <img src="/images/{{this.merchant.merchantLogo}}" alt="Logo" width="40" class="rounded-circle">
+              {{else}}
+                <span class="text-muted">Sin logo</span>
+              {{/if}}
+            </td>
+            <td class="{{#if (eq status 'pending')}}text-warning{{else if (eq status 'processing')}}text-info{{else}}text-success{{/if}}">
+              {{this.status}}
+            </td>
+            <td>RD$ {{this.total}}</td>
+            <td>{{this.totalProducts}}</td>
+            <td>{{this.formattedDate}}</td>
+            <td>{{this.formattedTime}}</td>
           </tr>
         {{/each}}
       </tbody>
     </table>
   {{else}}
-    <p>No orders found.</p>
+    <div class="alert alert-info text-center">
+      No tienes pedidos aún.
+    </div>
   {{/if}}
 </main>
+
+<style>
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .clickable-row:hover {
+    background-color: #f2f2f2;
+  }
+</style>
