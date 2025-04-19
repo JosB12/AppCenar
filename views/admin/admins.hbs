@@ -1,0 +1,40 @@
+{{!-- views/admin/admins.hbs --}}
+<h1>Listado de Administradores</h1>
+<a href="/admin/admins/new" class="btn btn-success mb-3">Crear Administrador</a>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Apellido</th>
+      <th>Usuario</th>
+      <th>Cédula</th>
+      <th>Email</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each admins}}
+      <tr>
+        <td>{{firstName}}</td>
+        <td>{{lastName}}</td>
+        <td>{{username}}</td>
+        <td>{{cedula}}</td>
+        <td>{{email}}</td>
+        <td>
+          <a href="/admin/admins/{{id}}/edit" class="btn btn-sm btn-primary">Editar</a>
+          {{#if active}}
+            <form action="/admin/admins/{{id}}/deactivate" method="POST" class="d-inline">
+              <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
+              <button class="btn btn-sm btn-warning">Inactivar</button>
+            </form>
+          {{else}}
+            <form action="/admin/admins/{{id}}/activate" method="POST" class="d-inline">
+              <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
+              <button class="btn btn-sm btn-success">Activar</button>
+            </form>
+          {{/if}}
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

@@ -1,0 +1,18 @@
+{{!-- views/admin/configuration-edit.hbs --}}
+<h1>Editar Configuración</h1>
+<form action="/admin/configuration" method="POST">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+  <div class="mb-3">
+    <label for="itbis" class="form-label">ITBIS (%)</label>
+    <input
+      type="number"
+      class="form-control"
+      id="itbis"
+      name="itbis"
+      value="{{config.itbis}}"
+      required
+    />
+  </div>
+  <button class="btn btn-primary">Guardar</button>
+  <a href="/admin/configuration" class="btn btn-secondary ms-2">Volver</a>
+</form>
