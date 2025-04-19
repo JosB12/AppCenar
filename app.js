@@ -29,6 +29,7 @@ const PORT = 1200;
 const authRouter = require("./routes/auth");
 const merchantRouter = require("./routes/merchants");
 const customerRouter = require("./routes/customer");
+const deliveryRouter = require("./routes/delivery");
 
 // Controller
 const errorController = require("./controllers/ErrorController");
@@ -120,6 +121,7 @@ app.get("/", (req, res, next) => {
 app.use(authRouter);
 app.use("/customer",customerRouter);
 app.use("/merchant",merchantRouter);
+app.use("/delivery",deliveryRouter);
 
 // Middleware para manejar rutas no encontradas (404)
 app.use(errorController.Get404);

@@ -86,67 +86,76 @@ exports.GetSignup = (req, res, next) => {
 };
 
 exports.PostSignup = async (req, res, next) => {
-  const firstName = req.body.firstName;
-  const lastName = req.body.lastName;
-  const phone = req.body.phone;
-  const email = req.body.email;
-  const username = req.body.username;
-  const role = req.body.role;
-  const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
+  const {
+    firstName,
+    lastName,
+    phone,
+    email,
+    username,
+    role,
+    password,
+    confirmPassword,
+  } = req.body;
 
   try {
+    // 1. Validaciones básicas
     if (password !== confirmPassword) {
       req.flash("errors", "Passwords do not match");
       return res.redirect("/signup");
     }
-
-    // Verifica si ya existe un usuario con ese email
-    const existingUser = await User.findOne({ where: { email: email } });
+    const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       req.flash("errors", "Email already exists, please choose a different one");
       return res.redirect("/signup");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // 2. Hasheamos la contraseña y generamos token de activación
+    const hashedPassword    = await bcrypt.hash(password, 12);
+    const activationToken  = crypto.randomBytes(32).toString("hex");
 
-    // Genera un token de activación
-    const activationToken = crypto.randomBytes(32).toString("hex");
+    // 3. Extraemos el fichero "profilePhoto" de req.files
+    //    multer().any() almacena TODOS los archivos en req.files
+    const profileUpload = (req.files || []).find(
+      (f) => f.fieldname === "profilePhoto"
+    );
+    const profilePhotoPath = profileUpload ? profileUpload.path : null;
 
-    // Crea el usuario, que se creará inactivo, y guarda el activationToken
+    // 4. Creamos el usuario en la BD
     const newUser = await User.create({
-      firstName: firstName,
-      lastName: lastName,
-      phone: phone,
-      email: email,
-      username: username,
-      profilePhoto: req.file ? req.file.path : null,
+      firstName,
+      lastName,
+      phone,
+      email,
+      username,
+      // ahora sí guardamos el path subido
+      profilePhoto: profilePhotoPath,
       password: hashedPassword,
-      role: role,
+      role,
       active: false,
-      activationToken: activationToken,
+      activationToken,
     });
 
-    // Construye el enlace de activación. Asegúrate de que la URL y el puerto sean correctos.
+    // 5. Enviamos correo de activación
     const activationLink = `http://localhost:1200/activate/${activationToken}`;
-
-    // Envía el correo con el enlace de activación
-    transporter.sendMail({
-      from: "blancojosue931@gmail.com", // Cambia por el correo configurado
+    await transporter.sendMail({
+      from: "tu-email@dominio.com",
       to: email,
-      subject: "Account Activation",
-      html: `<h3>Your account was created!</h3>
-             <p>Click <a href="${activationLink}">here</a> to activate your account.</p>`,
+      subject: "Activate your account",
+      html: `
+        <h3>¡Bienvenido!</h3>
+        <p>Haz click <a href="${activationLink}">aquí</a> para activar tu cuenta.</p>
+      `,
     });
 
     req.flash("success", "Signup successful! Please check your email to activate your account.");
     res.redirect("/login");
   } catch (error) {
-    console.log(error);
+    console.error(error);
     req.flash("errors", `Signup Error: ${error.message}`);
     res.redirect("/signup");
   }
 };
+
 
 exports.GetMerchantSignup = async (req, res, next) => {
   try {
@@ -165,74 +174,84 @@ exports.GetMerchantSignup = async (req, res, next) => {
 };
 
 // Procesa el registro de un merchant
-exports.PostMerchantSignup = async (req, res, next) => 
-  {
-  const merchantName = req.body.merchantName; // Nombre del comercio
-  const phone = req.body.phone;
-  const email = req.body.email;
-  const username = req.body.username;
-  const merchantLogo = req.file ? req.file.path : null; // Input file: name="merchantLogo"
-  const openingTime = req.body.openingTime; // Debe venir en formato adecuado, ej. "08:00"
-  const closingTime = req.body.closingTime; // Ej. "20:00"
-  const merchantTypeId = req.body.merchantTypeId; // Valor seleccionado del select
-  const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
+exports.PostMerchantSignup = async (req, res, next) => {
+  const {
+    merchantName,
+    phone,
+    email,
+    // si tienes un campo username en el formulario:
+    openingTime,
+    closingTime,
+    merchantTypeId,
+    password,
+    confirmPassword,
+  } = req.body;
+  const username = req.body.username || email;
 
   try {
+    // 1️⃣ Validación de contraseñas
     if (password !== confirmPassword) {
       req.flash("errors", "Passwords do not match");
       return res.redirect("/signupAsMerchant");
     }
 
-    // Verifica si ya existe un usuario con ese email
-    const existingUser = await User.findOne({ where: { email: email } });
-    if (existingUser) {
-      req.flash("errors", "Email already exists, please choose a different one");
-      return res.redirect("/signup/merchant");
+    // 2️⃣ Verificar duplicados por email (y opcionalmente por username)
+    const existingEmail = await User.findOne({ where: { email } });
+    if (existingEmail) {
+      req.flash("errors", "Email already exists");
+      return res.redirect("/signupAsMerchant");
+    }
+    const existingUsername = await User.findOne({ where: { username } });
+    if (existingUsername) {
+      req.flash("errors", "Username already taken");
+      return res.redirect("/signupAsMerchant");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-    // Genera un token de activación
-    const activationToken = crypto.randomBytes(32).toString("hex");
+    // 3️⃣ Hashear la contraseña y generar token
+    const hashedPassword   = await bcrypt.hash(password, 12);
+    const activationToken  = crypto.randomBytes(32).toString("hex");
 
-    // Crea el usuario con rol "merchant", que se creará inactivo para activarse luego
+    // 4️⃣ Extraer el fichero merchantLogo de req.files
+    const logoFile = (req.files || []).find(f => f.fieldname === "merchantLogo");
+    const logoPath = logoFile ? logoFile.path : null;
+
+    // 5️⃣ Crear el merchant (activo = false)
     await User.create({
-      merchantName: merchantName,
-      phone: phone,
-      email: email,
-      // Si deseas un campo username distinto, asegúrate de capturarlo también;
-      // aquí por defecto se puede usar el email o un campo adicional en el formulario.
-      username: email,
-      profilePhoto: merchantLogo,
+      merchantName,
+      phone,
+      email,
+      username,
+      profilePhoto: logoPath,  // aquí guardas el logo
       password: hashedPassword,
       role: "merchant",
       active: false,
-      activationToken: activationToken,
-      openingTime: openingTime,
-      closingTime: closingTime,
-      merchantTypeId: merchantTypeId
+      activationToken,
+      openingTime,
+      closingTime,
+      merchantTypeId
     });
 
-    // Construye el enlace de activación (usa el puerto correcto)
+    // 6️⃣ Envío de correo de activación
     const activationLink = `http://localhost:1200/activate/${activationToken}`;
-
-    // Envía el correo con el enlace de activación
-    transporter.sendMail({
-      from: "blancojosue931@example.com", // Cambia por tu email configurado
+    await transporter.sendMail({
+      from: "tu-correo@dominio.com",
       to: email,
-      subject: "Account Activation",
-      html: `<h3>Your merchant account was created!</h3>
-             <p>Click <a href="${activationLink}">here</a> to activate your account.</p>`
+      subject: "Activate your merchant account",
+      html: `
+        <h3>¡Tu comercio fue creado!</h3>
+        <p>Haz click <a href="${activationLink}">aquí</a> para activar tu cuenta.</p>
+      `
     });
 
     req.flash("success", "Signup successful! Please check your email to activate your account.");
     res.redirect("/login");
   } catch (error) {
-    console.log(error);
+    console.error(error);
     req.flash("errors", `Merchant Signup Error: ${error.message}`);
     res.redirect("/signupAsMerchant");
   }
 };
+
 
 
 exports.GetActivate = async (req, res, next) => {
