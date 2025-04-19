@@ -23,6 +23,18 @@
     <label class="form-label">Phone</label>
     <input type="text" name="phone" class="form-control" value="{{user.phone}}" required>
   </div>
+  <div class="form-group">
+      <label>Foto actual:</label>
+      <div class="d-flex align-items-center mt-2 mb-3">
+        {{#if user.profilePhoto}}
+          <div class="border rounded p-2 bg-light shadow-sm">
+            <img src="/images/{{user.profilePhoto}}" alt="Foto de perfil" width="160" height="160" style="object-fit: contain;">
+          
+          </div>
+        {{else}}
+          <p class="text-muted">No hay foto subida</p>
+        {{/if}}
+      </div>
   <div class="mb-3">
     <label class="form-label">Profile Photo</label>
     <input type="file" name="profilePhoto" class="form-control">

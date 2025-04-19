@@ -118,8 +118,7 @@ exports.PostSignup = async (req, res, next) => {
     const profileUpload = (req.files || []).find(
       (f) => f.fieldname === "profilePhoto"
     );
-    const profilePhotoPath = profileUpload ? profileUpload.path : null;
-
+    const profileFile   = profileUpload ? profileUpload.filename : null;
     // 4. Creamos el usuario en la BD
     const newUser = await User.create({
       firstName,
@@ -128,7 +127,7 @@ exports.PostSignup = async (req, res, next) => {
       email,
       username,
       // ahora sí guardamos el path subido
-      profilePhoto: profilePhotoPath,
+      profilePhoto: profileFile,
       password: hashedPassword,
       role,
       active: false,
@@ -213,7 +212,7 @@ exports.PostMerchantSignup = async (req, res, next) => {
 
     // 4️⃣ Extraer el fichero merchantLogo de req.files
     const logoFile = (req.files || []).find(f => f.fieldname === "merchantLogo");
-    const logoPath = logoFile ? logoFile.path : null;
+    const logoFilename = logoFile ? logoFile.filename : null;
 
     // 5️⃣ Crear el merchant (activo = false)
     await User.create({
@@ -221,7 +220,7 @@ exports.PostMerchantSignup = async (req, res, next) => {
       phone,
       email,
       username,
-      profilePhoto: logoPath,  // aquí guardas el logo
+      merchantLogo: logoFilename,
       password: hashedPassword,
       role: "merchant",
       active: false,

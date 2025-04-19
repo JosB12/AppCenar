@@ -306,7 +306,7 @@ exports.postCreateMerchantType = async (req, res, next) => {
     await MerchantType.create({
       name,
       description,
-      icon: iconFile.path
+      icon: iconFile.filename
     });
     req.flash("success", "Merchant type created successfully.");
     res.redirect("/admin/merchant-types");

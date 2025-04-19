@@ -107,7 +107,7 @@ exports.postProfile = async (req, res, next) => {
         // busca en req.files el campo que te interese
         const upload = req.files.find((f) => f.fieldname === "profilePhoto");
         if (upload) {
-          req.user.profilePhoto = upload.path;
+          req.user.profilePhoto = upload.filename;
         }
       }
     await req.user.save();
