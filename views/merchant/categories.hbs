@@ -1,0 +1,41 @@
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Mantenimiento de Categorías</h2>
+    <a href="/merchant/categories/create" class="btn btn-primary">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+      Nueva Categoría
+    </a>
+  </div>
+
+  {{#if categories.length}}
+    <table class="table table-bordered table-hover shadow-sm">
+      <thead class="thead-dark">
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Productos asignados</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each categories}}
+          <tr>
+            <td>{{this.name}}</td>
+            <td>{{this.description}}</td>
+            <td>{{this.productCount}}</td> <!-- Este campo debe venir precalculado -->
+            <td>
+              <a href="/merchant/categories/edit/{{this.id}}" class="btn btn-sm btn-warning">Editar</a>
+              <a href="/merchant/categories/delete/{{this.id}}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <div class="alert alert-info text-center">
+      No se han creado categorías aún.
+    </div>
+  {{/if}}
+</div>
+
+

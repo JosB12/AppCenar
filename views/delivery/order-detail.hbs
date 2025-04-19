@@ -1,0 +1,26 @@
+<h1>Order #{{order.id}} Detail</h1>
+<p><strong>Merchant:</strong> {{order.merchant.merchantName}}</p>
+<p><strong>Status:</strong> {{order.status}}</p>
+<p><strong>Placed at:</strong> {{order.createdAt}}</p>
+
+<h3>Products</h3>
+<ul class="list-group mb-3">
+  {{#each order.orderProducts}}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <img src="/{{product.imagePath}}" width="40" class="me-2"/>
+      {{product.name}}
+      <span>{{product.price}}</span>
+    </li>
+  {{/each}}
+</ul>
+
+<p><strong>Total:</strong> {{order.total}}</p>
+
+{{#if (eq order.status "in process")}}
+  <form action="/delivery/order/{{order.id}}/complete" method="POST">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+    <button class="btn btn-success">Complete Order</button>
+  </form>
+{{/if}}
+
+<a href="/delivery/home" class="btn btn-secondary mt-3">Back</a>
