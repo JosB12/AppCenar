@@ -10,11 +10,18 @@ exports.getHome = async (req, res, next) => {
     const orders = await Order.findAll({
       where: { deliveryId: req.user.id },
       include: [
+        // trae datos del comercio
         { model: User, as: "merchant" },
-        { model: OrderProduct, include: [{ model: Product }] }
+        // trae productos usando el alias order_products
+        {
+          model: OrderProduct,
+          as: "order_products",
+          include: [{ model: Product }]
+        }
       ],
       order: [["createdAt", "DESC"]],
     });
+
     res.render("delivery/home", {
       pageTitle: "Delivery Home",
       orders,
@@ -28,14 +35,25 @@ exports.getHome = async (req, res, next) => {
 exports.getOrderDetail = async (req, res, next) => {
   try {
     const order = await Order.findOne({
-      where: { id: req.params.orderId, deliveryId: req.user.id },
+      where: {
+        id: req.params.orderId,
+        deliveryId: req.user.id
+      },
       include: [
         { model: User, as: "merchant" },
         { model: Address },
-        { model: OrderProduct, include: [{ model: Product }] }
+        {
+          model: OrderProduct,
+          as: "order_products",
+          include: [{ model: Product }]
+        }
       ],
     });
-    if (!order) return res.redirect("/delivery/home");
+
+    if (!order) {
+      return res.redirect("/delivery/home");
+    }
+
     res.render("delivery/order-detail", {
       pageTitle: "Order Detail",
       order,
@@ -48,14 +66,24 @@ exports.getOrderDetail = async (req, res, next) => {
 exports.postCompleteOrder = async (req, res, next) => {
   try {
     const order = await Order.findOne({
-      where: { id: req.params.orderId, deliveryId: req.user.id },
+      where: {
+        id: req.params.orderId,
+        deliveryId: req.user.id
+      },
     });
-    if (!order) return res.redirect("/delivery/home");
+
+    if (!order) {
+      return res.redirect("/delivery/home");
+    }
+
+    // marca el pedido como completado
     order.status = "completed";
     await order.save();
-    // Opcional: marcar al delivery como disponible de nuevo
+
+    // opcional: vuelve a poner al delivery disponible
     req.user.available = true;
     await req.user.save();
+
     res.redirect("/delivery/order/" + req.params.orderId);
   } catch (err) {
     next(err);
@@ -75,8 +103,15 @@ exports.postProfile = async (req, res, next) => {
     req.user.firstName = firstName;
     req.user.lastName  = lastName;
     req.user.phone     = phone;
-    if (req.file) req.user.profilePhoto = req.file.path;
+    if (req.files && req.files.length) {
+        // busca en req.files el campo que te interese
+        const upload = req.files.find((f) => f.fieldname === "profilePhoto");
+        if (upload) {
+          req.user.profilePhoto = upload.path;
+        }
+      }
     await req.user.save();
+    req.flash("success", "Tu perfil se ha actualizado correctamente");
     res.redirect("/delivery/profile");
   } catch (err) {
     next(err);

@@ -53,8 +53,8 @@ app.engine(
 );
 app.set("view engine", "hbs");
 app.set("views", "views");
-const hbs = require("hbs");
-hbs.registerHelper("eq", (a, b) => a === b);
+// const hbs = require("hbs");
+// hbs.registerHelper("eq", (a, b) => a === b);
 
 
 
@@ -112,6 +112,8 @@ app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.errorMessages = errors;
   res.locals.hasErrorMessages = errors.length > 0;
+  res.locals.successMessages = req.flash("success");
+  res.locals.hasSuccessMessages = res.locals.successMessages.length > 0;
   res.locals.csrfToken = req.csrfToken();
   next();
 });
@@ -227,7 +229,7 @@ OrderProduct.belongsTo(Order, {
 });
 Order.hasMany(OrderProduct, {
   foreignKey: "orderId",
-  as: "order_products", // 
+  as: "order_products", // Alias para evitar conflictos con la relación inversa
 });
 // OrderProduct se asocia a Product
 OrderProduct.belongsTo(Product, {
