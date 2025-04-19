@@ -1,0 +1,31 @@
+{{!-- views/admin/merchant-types.hbs --}}
+<h1>Listado de Tipos de Comercios</h1>
+<a href="/admin/merchant-types/new" class="btn btn-success mb-3">Crear Tipo de Comercio</a>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Icono</th>
+      <th>Descripción</th>
+      <th># Comercios</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each types}}
+      <tr>
+        <td>{{name}}</td>
+        <td><img src="/images/{{icon}}" alt="Icon" width="40"/></td>
+        <td>{{description}}</td>
+        <td>{{merchantCount}}</td>
+        <td>
+          <a href="/admin/merchant-types/{{id}}/edit" class="btn btn-sm btn-primary">Editar</a>
+          <form action="/admin/merchant-types/{{id}}/delete" method="POST" class="d-inline">
+            <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
+            <button class="btn btn-sm btn-danger">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

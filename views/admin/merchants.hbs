@@ -1,0 +1,40 @@
+{{!-- views/admin/merchants.hbs --}}
+<h1>Listado de Comercios</h1>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Nombre Comercio</th>
+      <th>Logo</th>
+      <th># Pedidos</th>
+      <th>Teléfono</th>
+      <th>Apertura–Cierre</th>
+      <th>Email</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each merchants}}
+      <tr>
+        <td>{{merchantName}}</td>
+        <td><img src="/{{logo}}" alt="Logo" width="50"/></td>
+        <td>{{orderCount}}</td>
+        <td>{{phone}}</td>
+        <td>{{openingTime}} – {{closingTime}}</td>
+        <td>{{email}}</td>
+        <td>
+          {{#if active}}
+            <form action="/admin/merchants/{{id}}/deactivate" method="POST" class="d-inline">
+              <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
+              <button class="btn btn-sm btn-warning">Inactivar</button>
+            </form>
+          {{else}}
+            <form action="/admin/merchants/{{id}}/activate" method="POST" class="d-inline">
+              <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
+              <button class="btn btn-sm btn-success">Activar</button>
+            </form>
+          {{/if}}
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

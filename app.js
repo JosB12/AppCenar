@@ -29,6 +29,8 @@ const PORT = 1200;
 const authRouter = require("./routes/auth");
 const merchantRouter = require("./routes/merchants");
 const customerRouter = require("./routes/customer");
+const deliveryRouter = require("./routes/delivery");
+const adminRouter = require("./routes/admin");
 
 // Controller
 const errorController = require("./controllers/ErrorController");
@@ -52,6 +54,10 @@ app.engine(
 );
 app.set("view engine", "hbs");
 app.set("views", "views");
+// const hbs = require("hbs");
+// hbs.registerHelper("eq", (a, b) => a === b);
+
+
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -107,6 +113,8 @@ app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.errorMessages = errors;
   res.locals.hasErrorMessages = errors.length > 0;
+  res.locals.successMessages = req.flash("success");
+  res.locals.hasSuccessMessages = res.locals.successMessages.length > 0;
   res.locals.csrfToken = req.csrfToken();
   next();
 });
@@ -120,6 +128,8 @@ app.get("/", (req, res, next) => {
 app.use(authRouter);
 app.use("/customer",customerRouter);
 app.use("/merchant",merchantRouter);
+app.use("/delivery",deliveryRouter);
+app.use("/admin",adminRouter);
 
 // Middleware para manejar rutas no encontradas (404)
 app.use(errorController.Get404);
@@ -221,6 +231,7 @@ OrderProduct.belongsTo(Order, {
 });
 Order.hasMany(OrderProduct, {
   foreignKey: "orderId",
+  as: "order_products", // Alias para evitar conflictos con la relación inversa
 });
 // OrderProduct se asocia a Product
 OrderProduct.belongsTo(Product, {
@@ -266,6 +277,8 @@ User.hasMany(Favorite, {
   foreignKey: "merchantId",
 });
 //#endregion
+
+
 
 // correr para crear base de datos y comentar el siguiente bloque de codigo
 // sequelize

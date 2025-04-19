@@ -1,8 +1,6 @@
 const Sequelize = require("sequelize");
 const path = require("path");
 
-
-
 // cambiar la base de datos a la mysql local de cada quien
 const sequelize = new Sequelize("appcenar", "root", "BlancoJosue12.", {
   dialect: "mysql",

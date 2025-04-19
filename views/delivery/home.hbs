@@ -1,0 +1,28 @@
+<h1>Delivery Dashboard</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Merchant</th>
+      <th>Status</th>
+      <th>Total</th>
+      <th># Products</th>
+      <th>When</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each orders}}
+    <tr>
+      <td><img src="/{{merchant.merchantLogo}}" width="32" class="me-2"/>{{merchant.merchantName}}</td>
+      <td>{{status}}</td>
+      <td>{{total}}</td>
+      <td>{{orderProducts.length}}</td>
+      <td>{{createdAt}}</td>
+      <td><a href="/delivery/order/{{id}}" class="btn btn-sm btn-primary">View</a></td>
+    </tr>
+    {{/each}}
+    {{#unless orders.length}}
+    <tr><td colspan="6">No orders assigned yet.</td></tr>
+    {{/unless}}
+  </tbody>
+</table>

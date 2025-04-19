@@ -1,0 +1,37 @@
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="mb-4 text-center">Agregar nueva dirección</h2>
+
+    <form action="/customer/addresses/create" method="POST">
+      <input type="hidden" name="_csrf" value="{{csrfToken}}">
+
+      <div class="form-group">
+        <label for="name">Nombre de la dirección</label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          name="name"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descripción</label>
+        <textarea
+          class="form-control"
+          id="description"
+          name="description"
+          rows="3"
+          placeholder="Ej: Calle 123, Apto 4B, cerca del parque..."
+          required
+        ></textarea>
+      </div>
+
+      <div class="form-group text-center mt-4">
+        <button type="submit" class="btn btn-success px-4 mr-2">Crear dirección</button>
+        <a href="/customer/addresses" class="btn btn-secondary px-4">Volver</a>
+      </div>
+    </form>
+  </div>
+</div>
