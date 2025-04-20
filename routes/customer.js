@@ -32,5 +32,20 @@ router.get("/favorites", isAuth, customerController.GetFavorites);
 router.post("/favorites/:merchantId/add", isAuth, customerController.addFavorite);
 router.post("/favorites/:merchantId/remove", isAuth, customerController.removeFavorite);
 
+// Catálogo de productos de un comercio
+router.get("/catalog/:merchantId", isAuth, customerController.getMerchantCatalog);
+router.post("/cart/add", isAuth, customerController.addToCart);
+router.post("/cart/remove", isAuth, customerController.removeFromCart);
+
+
+// routes/customerRoutes.js
+router.get("/orders", isAuth, customerController.getCustomerOrders);
+router.get("/orders/:orderId", isAuth, customerController.getOrderDetails);
+
+
+
+
+
+
 
 module.exports = router;

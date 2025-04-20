@@ -5,6 +5,8 @@ const OrderProduct = require("../models/OrderProduct");
 const Address = require("../models/Address");
 const User = require("../models/User");
 const Favorite = require("../models/Favorite");
+const Category = require("../models/Category");
+const Product = require("../models/Product");
 const { Op } = require("sequelize");
 
 
@@ -271,6 +273,7 @@ exports.postDeleteAddress = async (req, res, next) => {
 
 //#endregion 
 
+//#region Favoritos
 // Lista los merchants marcados como favoritos por el cliente
 exports.GetFavorites = async (req, res, next) => {
   try {
@@ -315,3 +318,196 @@ exports.removeFavorite = async (req, res, next) => {
     next(error);
   }
 };
+
+//#endregion
+
+
+//#region Catalogo productos
+exports.getMerchantCatalog = async (req, res, next) => {
+  const merchantId = req.params.merchantId;
+
+  try {
+    const merchant = await User.findOne({
+      where: { id: merchantId, role: "merchant", active: true }
+    });
+    if (!merchant) return res.status(404).send("Comercio no encontrado");
+
+    const categories = await Category.findAll({
+      where: { merchantId },
+      include: [{
+        model: Product,
+        where: { merchantId },
+        required: false
+      }],
+      order: [["name", "ASC"]]
+    });
+
+    const cart = req.session.cart || {};
+    const cartKeys = Object.keys(cart);
+    const subtotal = cartKeys.reduce((sum, key) => sum + cart[key].price, 0);
+
+    res.render("customer/catalog", {
+      pageTitle: `Catálogo de ${merchant.merchantName}`,
+      merchant,
+      categories,
+      cart,
+      cartKeys,
+      subtotal,
+      csrfToken: req.csrfToken() // 👈 Asegura que se genere en el render principal
+    });
+  } catch (error) {
+    console.log("Error en getMerchantCatalog:", error);
+    next(error);
+  }
+};
+
+exports.addToCart = (req, res) => {
+  const { productId, name, price, merchantId } = req.body;
+
+  if (!req.session.cart) req.session.cart = {};
+  if (!req.session.cart[productId]) {
+    req.session.cart[productId] = {
+      name,
+      price: parseFloat(price)
+    };
+  }
+
+  res.redirect(`/customer/catalog/${merchantId}`);
+};
+
+exports.removeFromCart = (req, res) => {
+  const { productId, merchantId } = req.body;
+
+  if (req.session.cart && req.session.cart[productId]) {
+    delete req.session.cart[productId];
+  }
+
+  res.redirect(`/customer/catalog/${merchantId}`);
+};
+
+//#endregion
+
+
+//#region pedidos/ordenes
+exports.getCustomerOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.findAll({
+      where: { customerId: req.user.id },
+      include: [
+        {
+          model: User,
+          as: "merchant",
+          attributes: ["merchantName", "merchantLogo"]
+        },
+        {
+          model: OrderProduct,
+          as: "order_products",
+          attributes: ["id"]
+        }
+      ],
+      order: [["orderDateTime", "DESC"]]
+    });
+
+    const formattedOrders = orders
+      .filter(order => order.merchant) // ❗️Filtra solo los que tienen merchant
+      .map(order => {
+        const totalProducts = order.order_products.length;
+        const formattedDate = new Date(order.orderDateTime).toLocaleDateString("es-DO", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        });
+        const formattedTime = new Date(order.orderDateTime).toLocaleTimeString("es-DO", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        });
+
+        return {
+          id: order.id,
+          status: order.status,
+          total: order.total,
+          formattedDate,
+          formattedTime,
+          totalProducts,
+          merchant: {
+            merchantName: order.merchant.merchantName,
+            merchantLogo: order.merchant.merchantLogo
+          }
+        };
+      });
+    //console.log(JSON.stringify(orders, null, 2));
+
+
+    res.render("customer/orders", {
+      pageTitle: "Mis pedidos",
+      orders: formattedOrders
+    });
+  } catch (error) {
+    console.log("Error en getCustomerOrders:", error);
+    next(error);
+  }
+};
+
+
+
+exports.getOrderDetails = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  const customerId = req.user.id;
+
+  try {
+    const order = await Order.findOne({
+      where: {
+        id: orderId,
+        customerId: customerId
+      },
+      include: [
+        {
+          model: User,
+          as: "merchant",
+          attributes: ["merchantName", "merchantLogo"]
+        },
+        {
+          model: OrderProduct,
+          as: "order_products",
+          include: [
+            {
+              model: Product,
+              attributes: ["image"]
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!order) {
+      return res.status(404).render("404", {
+        pageTitle: "Pedido no encontrado"
+      });
+    }
+
+    const formattedDate = order.orderDateTime.toLocaleDateString("es-DO", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+
+    const formattedTime = order.orderDateTime.toLocaleTimeString("es-DO", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    res.render("customer/order-detail", {
+      pageTitle: `Detalle del Pedido #${order.id}`,
+      order,
+      formattedDate,
+      formattedTime
+    });
+
+  } catch (error) {
+    console.log("Error al obtener el detalle del pedido:", error);
+    next(error);
+  }
+};
+
+//#endregion

@@ -1,0 +1,40 @@
+<main class="container mt-5">
+  <div class="text-center mb-4">
+    <img src="/images/{{order.merchant.merchantLogo}}" alt="{{order.merchant.merchantName}}" style="height: 50px;">
+    <h3 class="mt-2">{{order.merchant.merchantName}}</h3>
+    <span class="badge badge-pill 
+      {{#if (eq order.status "pending")}}badge-warning
+      {{else if (eq order.status "processing")}}badge-primary
+      {{else}}badge-success{{/if}}">
+      {{order.status}}
+    </span>
+    <p class="text-muted mt-1">{{formattedDate}} {{formattedTime}}</p>
+  </div>
+
+  <hr>
+
+  <h5>Tu pedido</h5>
+  <ul class="list-group mb-3">
+    {{#each order.order_products}}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          {{#if this.product.image}}
+            <img src="/images/{{this.product.image}}" alt="{{this.name}}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded mr-3">
+          {{else}}
+            <div class="bg-light d-flex align-items-center justify-content-center mr-3 rounded" style="width: 50px; height: 50px;">
+              <i class="fas fa-box-open text-muted"></i>
+            </div>
+          {{/if}}
+          <span>{{this.name}}</span>
+        </div>
+        <span>RD$ {{this.price}}</span>
+      </li>
+    {{/each}}
+    <li class="list-group-item d-flex justify-content-between font-weight-bold">
+      <span>Total</span>
+      <span>RD$ {{order.total}}</span>
+    </li>
+  </ul>
+
+  <a href="/customer/orders" class="btn btn-outline-secondary btn-block">← Volver al listado</a>
+</main>

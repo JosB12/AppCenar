@@ -47,7 +47,8 @@ app.engine(
     extname: "hbs",
     handlebars: allowInsecurePrototypeAccess(Handlebars),
     helpers: {
-      eq: compareHelpers.eq
+      eq: compareHelpers.eq,
+      includes: (arr, val) => Array.isArray(arr) && arr.includes(val)
 
     },
   })

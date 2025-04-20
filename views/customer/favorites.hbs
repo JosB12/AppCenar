@@ -6,7 +6,7 @@
     <div class="list-group">
       {{#each favorites}}
         <div class="list-group-item d-flex align-items-center justify-content-between py-3">
-          <div class="d-flex align-items-center">
+          <a href="/customer/catalog/{{this.merchant.id}}" class="d-flex align-items-center text-decoration-none text-dark flex-grow-1">
             {{#if this.merchant.merchantLogo}}
               <img
                 src="/images/{{this.merchant.merchantLogo}}"
@@ -20,7 +20,7 @@
             {{/if}}
 
             <strong class="ml-2">{{this.merchant.merchantName}}</strong>
-          </div>
+          </a>
 
           <form method="POST" action="/customer/favorites/{{this.merchant.id}}/remove" class="mb-0">
             <input type="hidden" name="_csrf" value="{{../csrfToken}}">
