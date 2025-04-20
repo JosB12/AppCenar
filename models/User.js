@@ -13,6 +13,10 @@ const User = sequelize.define("user", {
     type: Sequelize.STRING,
     allowNull: true,
   },
+  cedula: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
   lastName: {
     type: Sequelize.STRING,
     allowNull: true,

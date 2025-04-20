@@ -30,6 +30,7 @@ const authRouter = require("./routes/auth");
 const merchantRouter = require("./routes/merchants");
 const customerRouter = require("./routes/customer");
 const deliveryRouter = require("./routes/delivery");
+const adminRouter = require("./routes/admin");
 
 // Controller
 const errorController = require("./controllers/ErrorController");
@@ -128,6 +129,7 @@ app.use(authRouter);
 app.use("/customer",customerRouter);
 app.use("/merchant",merchantRouter);
 app.use("/delivery",deliveryRouter);
+app.use("/admin",adminRouter);
 
 // Middleware para manejar rutas no encontradas (404)
 app.use(errorController.Get404);
