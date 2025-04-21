@@ -102,6 +102,74 @@ exports.getOrderDetail = async (req, res, next) => {
   }
 };
 
+exports.assignDelivery = async (req, res, next) => {
+  const orderId = req.params.orderId;
+
+  try {
+    const order = await Order.findOne({
+      where: {
+        id: orderId,
+        merchantId: req.user.id,
+        status: "pending"
+      }
+    });
+
+    if (!order) {
+      req.flash("errors", "Pedido no válido o ya en proceso.");
+      return res.redirect("/merchant/home");
+    }
+
+    // Buscar todos los repartidores activos con sus órdenes en proceso
+    const deliveries = await User.findAll({
+      where: {
+        role: "delivery",
+        active: true
+      },
+      include: [{
+        model: Order,
+        as: "deliveryOrders",
+        where: { status: "processing" },
+        required: false
+      }]
+    });
+
+    if (!deliveries.length) {
+      req.flash("errors", "No hay repartidores activos disponibles en este momento. Intente más tarde.");
+      return res.redirect(`/merchant/orders/${orderId}`);
+    }
+
+    // Ordenar por la menor cantidad de órdenes activas
+    const sorted = deliveries
+      .map(delivery => ({
+        delivery,
+        activeOrders: delivery.deliveryOrders?.length || 0
+      }))
+      .sort((a, b) => a.activeOrders - b.activeOrders);
+
+    const selectedDelivery = sorted[0]?.delivery;
+
+    if (!selectedDelivery) {
+      req.flash("errors", "Error al asignar repartidor. Intenta nuevamente.");
+      return res.redirect(`/merchant/orders/${orderId}`);
+    }
+
+    // Asignar delivery y actualizar estado
+    order.deliveryId = selectedDelivery.id;
+    order.status = "processing";
+    await order.save();
+
+    req.flash("success", "Repartidor asignado exitosamente.");
+    res.redirect("/merchant/home");
+
+  } catch (error) {
+    console.log("Error al asignar delivery:", error);
+    next(error);
+  }
+};
+
+
+
+
 
 
 //#endregion
