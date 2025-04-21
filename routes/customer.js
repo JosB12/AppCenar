@@ -36,11 +36,17 @@ router.post("/favorites/:merchantId/remove", isAuth, customerController.removeFa
 router.get("/catalog/:merchantId", isAuth, customerController.getMerchantCatalog);
 router.post("/cart/add", isAuth, customerController.addToCart);
 router.post("/cart/remove", isAuth, customerController.removeFromCart);
+router.get("/checkout/:merchantId", isAuth, customerController.getCheckout);
+router.post("/checkout/:merchantId", isAuth, customerController.postCheckout);
+
+
+
 
 
 // routes/customerRoutes.js
 router.get("/orders", isAuth, customerController.getCustomerOrders);
 router.get("/orders/:orderId", isAuth, customerController.getOrderDetails);
+
 
 
 

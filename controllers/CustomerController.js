@@ -7,6 +7,7 @@ const User = require("../models/User");
 const Favorite = require("../models/Favorite");
 const Category = require("../models/Category");
 const Product = require("../models/Product");
+const Configuration = require("../models/Configuration");
 const { Op } = require("sequelize");
 
 
@@ -346,6 +347,10 @@ exports.getMerchantCatalog = async (req, res, next) => {
     const cartKeys = Object.keys(cart);
     const subtotal = cartKeys.reduce((sum, key) => sum + cart[key].price, 0);
 
+    const addresses = await Address.findAll({ where: { customerId: req.user.id } });
+    const hasAddresses = addresses.length > 0;
+
+
     res.render("customer/catalog", {
       pageTitle: `Catálogo de ${merchant.merchantName}`,
       merchant,
@@ -353,6 +358,7 @@ exports.getMerchantCatalog = async (req, res, next) => {
       cart,
       cartKeys,
       subtotal,
+      hasAddresses,
       csrfToken: req.csrfToken()   // ← MUY IMPORTANTE
     });
   } catch (error) {
@@ -389,6 +395,125 @@ exports.removeFromCart = (req, res) => {
   res.redirect(`/customer/catalog/${merchantId}`);
 };
 
+exports.getCheckout = async (req, res, next) => {
+  const customerId = req.user.id;
+  const merchantId = parseInt(req.params.merchantId); // asegúrate de convertir a número
+  const cart = req.session.cart || {};
+  const cartKeys = Object.keys(cart);
+
+  if (!merchantId || isNaN(merchantId)) {
+    return res.status(400).send("ID de comercio inválido");
+  }
+
+  if (cartKeys.length === 0) {
+    return res.redirect(`/customer/catalog/${merchantId}`);
+  }
+
+  try {
+    // 1. Direcciones del cliente
+    const addresses = await Address.findAll({ where: { customerId: customerId } });
+
+    // 2. Info del comercio
+    const merchant = await User.findOne({
+      where: { id: merchantId, role: "merchant", active: true },
+      attributes: ["id", "merchantName", "merchantLogo"] // ✅ INCLUYE EL ID
+    });
+
+    if (!merchant) {
+      return res.status(404).send("Comercio no encontrado");
+    }
+
+    // 3. Configuración ITBIS
+    const config = await Configuration.findOne();
+    const itbisValue = parseFloat(config?.itbis || 0);
+
+    // 4. Subtotal, ITBIS y total
+    const subtotal = cartKeys.reduce((sum, key) => sum + parseFloat(cart[key].price || 0), 0);
+    const itbisAmount = (subtotal * itbisValue) / 100;
+    const total = subtotal + itbisAmount;
+
+    res.render("customer/checkout", {
+      pageTitle: "Confirmar Pedido",
+      addresses,
+      merchant,
+      cart,
+      cartKeys,
+      subtotal: subtotal.toFixed(2),
+      itbisValue,
+      itbisAmount: itbisAmount.toFixed(2),
+      total: total.toFixed(2),
+      csrfToken: req.csrfToken()
+    });
+  } catch (error) {
+    console.log("Error en getCheckout:", error);
+    next(error);
+  }
+};
+exports.postCheckout = async (req, res, next) => {
+  console.log("🟢 POST /checkout recibido", req.body);
+  const customerId = req.user.id;
+  const merchantId = parseInt(req.params.merchantId); // ← corregido aquí
+  const { addressId } = req.body;
+
+  const cart = req.session.cart || {};
+  const cartKeys = Object.keys(cart);
+
+  if (!merchantId || isNaN(merchantId)) {
+    return res.status(400).send("ID de comercio inválido");
+  }
+
+  if (cartKeys.length === 0) {
+    return res.redirect(`/customer/catalog/${merchantId}`);
+  }
+
+  if (!addressId) {
+    return res.status(400).send("Debe seleccionar una dirección");
+  }
+
+  try {
+    const config = await Configuration.findOne();
+    const itbisValue = parseFloat(config?.itbis || 0);
+    const subtotal = cartKeys.reduce((sum, key) => sum + parseFloat(cart[key].price || 0), 0);
+    const itbisAmount = (subtotal * itbisValue) / 100;
+    const total = subtotal + itbisAmount;
+
+    const newOrder = await Order.create({
+      status: "pending",
+      orderDateTime: new Date(),
+      subtotal,
+      total,
+      customerId,
+      merchantId,
+      addressId
+    });
+
+    const productsToSave = cartKeys.map(productId => ({
+      orderId: newOrder.id,
+      productId: parseInt(productId), // ← clave para luego buscar la imagen
+      name: cart[productId].name,
+      price: cart[productId].price
+    }));
+
+    await OrderProduct.bulkCreate(productsToSave);
+
+    req.session.cart = {};
+    console.log("merchantId:", merchantId);
+    console.log("addressId:", addressId);
+    console.log("cart:", req.session.cart);
+
+    req.flash("success", "¡Pedido realizado con éxito!");
+    return res.redirect("/customer/home");
+
+
+    return res.redirect("/customer/home"); // ← redirección final
+  } catch (error) {
+    console.log("Error al procesar el pedido:", error);
+    next(error);
+  }
+};
+
+
+
 //#endregion
 
 
@@ -424,7 +549,7 @@ exports.getCustomerOrders = async (req, res, next) => {
         const formattedTime = new Date(order.orderDateTime).toLocaleTimeString("es-DO", {
           hour: "2-digit",
           minute: "2-digit",
-          hour12: false
+          hour12: true
         });
 
         return {

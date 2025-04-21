@@ -1,4 +1,9 @@
 <main class="container mt-5">
+  {{#if successMessages.length}}
+    <div class="alert alert-success text-center">
+      {{successMessages.[0]}}
+    </div>
+  {{/if}}
   <h2 class="mb-5 text-center">Hola, ¿Qué vas a pedir hoy?</h2>
 
   <div class="row justify-content-center">

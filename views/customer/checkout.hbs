@@ -1,0 +1,83 @@
+<main class="container mt-5">
+  <h3 class="mb-4 text-center">Confirmar Pedido</h3>
+
+<form method="POST" action="/customer/checkout/{{merchant.id}}" class="row" id="checkoutForm">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <input type="hidden" name="merchantId" value="{{merchant.id}}">
+
+    <!-- Sección de Direcciones -->
+    <div class="col-md-8">
+      {{#if addresses.length}}
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Selecciona una dirección</h5>
+            {{#each addresses}}
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input address-radio"
+                  type="radio"
+                  name="addressId"
+                  id="address{{this.id}}"
+                  value="{{this.id}}"
+                >
+                <label class="form-check-label" for="address{{this.id}}">
+                  {{this.name}} - {{this.description}}
+                </label>
+              </div>
+            {{/each}}
+          </div>
+        </div>
+      {{else}}
+      {{/if}}
+
+      <button
+        type="submit"
+        id="submitOrderBtn"
+        class="btn btn-primary btn-block mt-3"
+        {{#unless addresses.length}}disabled{{/unless}}
+      >
+        Pedir
+      </button>
+    </div>
+
+    <!-- Resumen del Pedido -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          {{#if merchant.merchantLogo}}
+            <img src="/images/{{merchant.merchantLogo}}" alt="{{merchant.merchantName}}" style="height: 50px;" class="mb-2">
+          {{/if}}
+          <h6 class="font-weight-bold">{{merchant.merchantName}}</h6>
+        </div>
+        <hr class="my-0">
+        <div class="card-body">
+          <p class="mb-2">Subtotal: <span class="float-right">RD$ {{subtotal}}</span></p>
+          <p class="mb-2">ITBIS ({{itbisValue}}%): <span class="float-right">RD$ {{itbisAmount}}</span></p>
+          <hr>
+          <p class="font-weight-bold">Total: <span class="float-right text-success">RD$ {{total}}</span></p>
+        </div>
+      </div>
+    </div>
+  </form>
+</main>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("checkoutForm");
+    const radios = form.querySelectorAll('.address-radio');
+    const submitBtn = document.getElementById('submitOrderBtn');
+
+    const updateButtonState = () => {
+      const anyChecked = [...radios].some(r => r.checked);
+      submitBtn.disabled = !anyChecked;
+    };
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', updateButtonState);
+    });
+
+    // Ejecutar al cargar por si ya hay algo seleccionado (por ejemplo, si vuelves atrás)
+    updateButtonState();
+  });
+</script>
+
