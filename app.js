@@ -48,7 +48,9 @@ app.engine(
     handlebars: allowInsecurePrototypeAccess(Handlebars),
     helpers: {
       eq: compareHelpers.eq,
-      includes: (arr, val) => Array.isArray(arr) && arr.includes(val)
+      includes: (arr, val) => Array.isArray(arr) && arr.includes(val),
+      lookup: (obj, field) => obj && obj[field]
+
 
     },
   })

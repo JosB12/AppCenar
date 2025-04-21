@@ -353,7 +353,7 @@ exports.getMerchantCatalog = async (req, res, next) => {
       cart,
       cartKeys,
       subtotal,
-      csrfToken: req.csrfToken() // 👈 Asegura que se genere en el render principal
+      csrfToken: req.csrfToken()   // ← MUY IMPORTANTE
     });
   } catch (error) {
     console.log("Error en getMerchantCatalog:", error);
@@ -378,8 +378,12 @@ exports.addToCart = (req, res) => {
 exports.removeFromCart = (req, res) => {
   const { productId, merchantId } = req.body;
 
-  if (req.session.cart && req.session.cart[productId]) {
-    delete req.session.cart[productId];
+  try {
+    if (req.session.cart && req.session.cart[productId]) {
+      delete req.session.cart[productId];
+    }
+  } catch (error) {
+    console.log("Error al eliminar del carrito:", error);
   }
 
   res.redirect(`/customer/catalog/${merchantId}`);
