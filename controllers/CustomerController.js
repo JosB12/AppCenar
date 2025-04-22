@@ -450,7 +450,7 @@ exports.getCheckout = async (req, res, next) => {
   }
 };
 exports.postCheckout = async (req, res, next) => {
-  console.log("🟢 POST /checkout recibido", req.body);
+  console.log("POST /checkout recibido", req.body);
   const customerId = req.user.id;
   const merchantId = parseInt(req.params.merchantId); // ← corregido aquí
   const { addressId } = req.body;
@@ -478,7 +478,7 @@ exports.postCheckout = async (req, res, next) => {
     const total = subtotal + itbisAmount;
 
     const newOrder = await Order.create({
-      status: "pending",
+      status: "pendiente",
       orderDateTime: new Date(),
       subtotal,
       total,
@@ -505,7 +505,7 @@ exports.postCheckout = async (req, res, next) => {
     return res.redirect("/customer/home");
 
 
-    return res.redirect("/customer/home"); // ← redirección final
+    // return res.redirect("/customer/home"); // ← redirección final
   } catch (error) {
     console.log("Error al procesar el pedido:", error);
     next(error);
@@ -538,7 +538,7 @@ exports.getCustomerOrders = async (req, res, next) => {
     });
 
     const formattedOrders = orders
-      .filter(order => order.merchant) // ❗️Filtra solo los que tienen merchant
+      .filter(order => order.merchant) // Filtra solo los que tienen merchant
       .map(order => {
         const totalProducts = order.order_products.length;
         const formattedDate = new Date(order.orderDateTime).toLocaleDateString("es-DO", {

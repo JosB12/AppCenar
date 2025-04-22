@@ -17,9 +17,9 @@
             <div>
               <div class="mb-1">
                 <span class="badge text-uppercase px-2 py-1
-                  {{#if (eq this.status "pending")}}badge-warning text-dark{{/if}}
-                  {{#if (eq this.status "processing")}}badge-primary{{/if}}
-                  {{#if (eq this.status "completed")}}badge-success{{/if}}">
+                  {{#if (eq this.status "pendiente")}}badge-warning text-dark{{/if}}
+                  {{#if (eq this.status "EN PROCESO")}}badge-primary{{/if}}
+                  {{#if (eq this.status "completado")}}badge-success{{/if}}">
                   {{this.status}}
                 </span>
                 <small class="text-muted ml-2">{{this.formattedDate}} • {{this.formattedTime}}</small>

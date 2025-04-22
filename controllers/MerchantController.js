@@ -110,7 +110,7 @@ exports.assignDelivery = async (req, res, next) => {
       where: {
         id: orderId,
         merchantId: req.user.id,
-        status: "pending"
+        status: "PENDIENTE"
       }
     });
 
@@ -128,7 +128,7 @@ exports.assignDelivery = async (req, res, next) => {
       include: [{
         model: Order,
         as: "deliveryOrders",
-        where: { status: "processing" },
+        where: { status: "EN PROCESO" },
         required: false
       }]
     });
@@ -155,7 +155,7 @@ exports.assignDelivery = async (req, res, next) => {
 
     // Asignar delivery y actualizar estado
     order.deliveryId = selectedDelivery.id;
-    order.status = "processing";
+    order.status = "EN PROCESO";
     await order.save();
 
     req.flash("success", "Repartidor asignado exitosamente.");

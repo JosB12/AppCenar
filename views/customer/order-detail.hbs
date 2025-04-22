@@ -7,8 +7,8 @@
     <span class="badge px-4 py-2 text-dark font-weight-bold"
           style="font-size: 1rem;
                  background-color:
-                   {{#if (eq order.status "pending")}}#ffc107
-                   {{else if (eq order.status "processing")}}#17a2b8
+                   {{#if (eq order.status "pendiente")}}#ffc107
+                   {{else if (eq order.status "EN PROCESO")}}#17a2b8
                    {{else}}#28a745{{/if}};
                  border-radius: 999px;">
       {{order.status}}

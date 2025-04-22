@@ -12,8 +12,8 @@
     <div class="mb-3">
       <span class="badge px-3 py-2 text-dark text-uppercase fw-bold"
         style="background-color:
-          {{#if (eq order.status 'pending')}}#ffc107
-          {{else if (eq order.status 'processing')}}#17a2b8
+          {{#if (eq order.status 'pendiente')}}#ffc107
+          {{else if (eq order.status 'EN PROCESO')}}#17a2b8
           {{else}}#28a745{{/if}};">
         {{order.status}}
       </span>
@@ -40,7 +40,7 @@
       <h5 class="mb-0 text-success">RD$ {{order.total}}</h5>
     </div>
 
-    {{#if (eq order.status 'pending')}}
+    {{#if (eq order.status 'pendiente')}}
       <form action="/merchant/orders/{{order.id}}/assign" method="POST" class="mt-4">
         <input type="hidden" name="_csrf" value="{{csrfToken}}">
         <button class="btn btn-danger btn-block">Asignar delivery</button>

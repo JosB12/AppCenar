@@ -1,26 +1,79 @@
-<h1>Order #{{order.id}} Detail</h1>
-<p><strong>Merchant:</strong> {{order.merchant.merchantName}}</p>
-<p><strong>Status:</strong> {{order.status}}</p>
-<p><strong>Placed at:</strong> {{order.createdAt}}</p>
+{{!-- views/delivery/order-detail.hbs --}}
+<main class="container py-4">
+  <!-- HEADER -->
+  <div class="text-center mb-5">
+    <h1 class="h3 mb-2">Pedido #{{order.id}}</h1>
 
-<h3>Products</h3>
-<ul class="list-group mb-3">
-  {{#each order.orderProducts}}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <img src="/{{product.imagePath}}" width="40" class="me-2"/>
-      {{product.name}}
-      <span>{{product.price}}</span>
-    </li>
-  {{/each}}
-</ul>
+    <!-- Merchant logo -->
+    <img
+      src="/images/{{order.merchant.merchantLogo}}"
+      alt="{{order.merchant.merchantName}}"
+      class="mb-3 rounded"
+      style="width:80px; height:80px; object-fit:cover;"
+    >
 
-<p><strong>Total:</strong> {{order.total}}</p>
+    <h2 class="h5 mb-1">{{order.merchant.merchantName}}</h2>
 
-{{#if (eq order.status "in process")}}
-  <form action="/delivery/order/{{order.id}}/complete" method="POST">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
-    <button class="btn btn-success">Complete Order</button>
-  </form>
-{{/if}}
+    <!-- Status badge -->
+    <span class="badge 
+      {{#if (eq order.status 'EN PROCESO')}} bg-warning text-dark
+      {{else if (eq order.status 'COMPLETADO')}} bg-success
+      {{else}} bg-secondary{{/if}}">
+      {{order.status}}
+    </span>
 
-<a href="/delivery/home" class="btn btn-secondary mt-3">Back</a>
+    <!-- Date & time -->
+    <p class="text-muted small mt-1">
+      {{order.formattedDate}} · {{order.formattedTime}}
+    </p>
+  </div>
+
+  <!-- COMPLETE BUTTON -->
+  {{#if (eq order.status 'EN PROCESO')}}
+    <form action="/delivery/order/{{order.id}}/complete" method="POST" class="mb-5">
+      <input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <button class="btn btn-danger w-100">Completar el pedido</button>
+    </form>
+  {{/if}}
+
+  <!-- PRODUCTS LIST -->
+  <section class="mb-5">
+    <h4 class="h6 mb-3">El pedido</h4>
+    <ul class="list-group">
+      {{#each order.order_products}}
+        <li class="list-group-item d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <img
+              src="/images/{{this.Product.image}}"
+              alt="{{this.Product.name}}"
+              class="rounded me-3"
+              style="width:48px; height:48px; object-fit:cover;"
+            >
+            <span>{{this.Product.name}}</span>
+          </div>
+          <span class="fw-bold">RD$ {{this.price}}</span>
+        </li>
+      {{/each}}
+    </ul>
+  </section>
+
+  <!-- DELIVERY ADDRESS -->
+  <section class="mb-5">
+    <p class="small text-muted mb-1">
+      <i class="fas fa-map-marker-alt me-1"></i>
+      Dirección de entrega
+    </p>
+    <p>{{order.Address.description}}</p>
+  </section>
+
+  <!-- TOTAL -->
+  <section class="mb-5">
+    <h4 class="h5">Total</h4>
+    <p class="fs-5 fw-bold">RD$ {{order.total}}</p>
+  </section>
+
+  <!-- BACK -->
+  <a href="/delivery/home" class="btn btn-outline-secondary">
+    ← Volver al tablero
+  </a>
+</main>
