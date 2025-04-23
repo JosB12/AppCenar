@@ -42,6 +42,7 @@ exports.getHome = async (req, res, next) => {
         status: o.status === "processing" ? "EN PROCESO"
                : o.status === "completed"  ? "COMPLETADO"
                : o.status.toUpperCase(),
+        total: o.total,
         orderCount: o.order_products.length,
         formattedDate,
         formattedTime
@@ -60,11 +61,8 @@ exports.getHome = async (req, res, next) => {
   }
 };
 
-
-
 exports.getOrderDetail = async (req, res, next) => {
   try {
-    // 1. Obtengo el pedido, con merchant, dirección y productos
     const order = await Order.findOne({
       where: {
         id: req.params.orderId,
@@ -78,44 +76,33 @@ exports.getOrderDetail = async (req, res, next) => {
         },
         {
           model: Address,
-          attributes: ["description"]
+          as: "address",              // debe coincidir con Order.belongsTo(Address, { as: "address" })
+          attributes: ["name","description"]
         },
         {
           model: OrderProduct,
           as: "order_products",
           include: [{
             model: Product,
-            attributes: ["name", "price", "image"]
+            as: "product",            // debe coincidir con OrderProduct.belongsTo(Product, { as: "product" })
+            attributes: ["name","price","image"]
           }]
         }
       ]
     });
 
-    if (!order) {
-      return res.redirect("/delivery/home");
-    }
+    if (!order) return res.redirect("/delivery/home");
 
-    // 2. Formateo fecha y hora
+    // formateo fecha/hora
     const when = order.orderDateTime || order.createdAt;
-    order.formattedDate = when.toLocaleDateString("es-DO", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
-    order.formattedTime = when.toLocaleTimeString("es-DO", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false
-    });
+    order.formattedDate = when.toLocaleDateString("es-DO",{ day:"2-digit",month:"short",year:"numeric" });
+    order.formattedTime = when.toLocaleTimeString("es-DO",{ hour:"2-digit",minute:"2-digit",hour12:false });
 
-    // 3. Aseguro que el status esté en mayúsculas en español
-    order.status = order.status.toUpperCase() === "COMPLETED"
-      ? "COMPLETADO"
-      : order.status.toUpperCase() === "IN PROCESS"
-        ? "EN PROCESO"
-        : order.status.toUpperCase();
+    // traduce status
+    order.status = order.status.toUpperCase()==="COMPLETED" ? "COMPLETADO"
+                  : order.status.toUpperCase()==="IN PROCESS" ? "EN PROCESO"
+                  : order.status.toUpperCase();
 
-    // 4. Renderizo la vista pasando todo lo necesario
     res.render("delivery/order-detail", {
       pageTitle: `Pedido #${order.id}`,
       order,
@@ -145,7 +132,7 @@ exports.postCompleteOrder = async (req, res, next) => {
     await order.save();
 
     // Marco al delivery como disponible de nuevo
-    req.user.available = true;
+    req.user.availability = 'disponible';
     await req.user.save();
 
     // Redirijo al mismo detalle (ahora sin el botón "Completar")

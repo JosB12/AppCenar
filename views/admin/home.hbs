@@ -1,5 +1,6 @@
 {{!-- views/admin/home.hbs --}}
 <h1>Admin Dashboard</h1>
+
 <div class="row">
   <div class="col-md-4 mb-3">
     <div class="card text-center">
@@ -26,6 +27,7 @@
     </div>
   </div>
 </div>
+
 <div class="row">
   <div class="col-md-6 mb-3">
     <div class="card text-center">
@@ -44,20 +46,13 @@
     </div>
   </div>
 </div>
-<div class="row">
-  <div class="col-md-6 mb-3">
+
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-4 mb-3 mx-auto">
     <div class="card text-center">
       <div class="card-body">
         <h5 class="card-title">Active / Inactive Merchants</h5>
         <p class="card-text">{{activeMerchants}} / {{inactiveMerchants}}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 mb-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h5 class="card-title">Active / Inactive Admins</h5>
-        <p class="card-text">{{activeAdmins}} / {{inactiveAdmins}}</p>
       </div>
     </div>
   </div>

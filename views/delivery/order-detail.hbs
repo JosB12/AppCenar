@@ -1,34 +1,26 @@
 {{!-- views/delivery/order-detail.hbs --}}
 <main class="container py-4">
-  <!-- HEADER -->
   <div class="text-center mb-5">
-    <h1 class="h3 mb-2">Pedido #{{order.id}}</h1>
-
-    <!-- Merchant logo -->
-    <img
-      src="/images/{{order.merchant.merchantLogo}}"
-      alt="{{order.merchant.merchantName}}"
-      class="mb-3 rounded"
-      style="width:80px; height:80px; object-fit:cover;"
-    >
-
+    {{#if order.merchant.merchantLogo}}
+      <img src="/images/{{order.merchant.merchantLogo}}"
+           alt="{{order.merchant.merchantName}}"
+           class="mb-3 rounded"
+           style="width:80px; height:80px; object-fit:cover;">
+    {{/if}}
     <h2 class="h5 mb-1">{{order.merchant.merchantName}}</h2>
 
-    <!-- Status badge -->
-    <span class="badge 
-      {{#if (eq order.status 'EN PROCESO')}} bg-warning text-dark
-      {{else if (eq order.status 'COMPLETADO')}} bg-success
-      {{else}} bg-secondary{{/if}}">
+    <span class="badge
+      {{#if (eq order.status 'EN PROCESO')}}bg-warning text-dark
+      {{else if (eq order.status 'COMPLETADO')}}bg-success
+      {{else}}bg-secondary{{/if}}">
       {{order.status}}
     </span>
 
-    <!-- Date & time -->
     <p class="text-muted small mt-1">
       {{order.formattedDate}} · {{order.formattedTime}}
     </p>
   </div>
 
-  <!-- COMPLETE BUTTON -->
   {{#if (eq order.status 'EN PROCESO')}}
     <form action="/delivery/order/{{order.id}}/complete" method="POST" class="mb-5">
       <input type="hidden" name="_csrf" value="{{csrfToken}}">
@@ -36,20 +28,19 @@
     </form>
   {{/if}}
 
-  <!-- PRODUCTS LIST -->
-  <section class="mb-5">
-    <h4 class="h6 mb-3">El pedido</h4>
+  <section class="mb-4">
+    <h4 class="h6 mb-3">Productos</h4>
     <ul class="list-group">
       {{#each order.order_products}}
         <li class="list-group-item d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center">
-            <img
-              src="/images/{{this.Product.image}}"
-              alt="{{this.Product.name}}"
-              class="rounded me-3"
-              style="width:48px; height:48px; object-fit:cover;"
-            >
-            <span>{{this.Product.name}}</span>
+            {{#if this.product.image}}
+              <img src="/images/{{this.product.image}}"
+                   alt="{{this.product.name}}"
+                   class="rounded me-3"
+                   style="width:48px; height:48px; object-fit:cover;">
+            {{/if}}
+            <span>{{this.product.name}}</span>
           </div>
           <span class="fw-bold">RD$ {{this.price}}</span>
         </li>
@@ -57,23 +48,24 @@
     </ul>
   </section>
 
-  <!-- DELIVERY ADDRESS -->
-  <section class="mb-5">
-    <p class="small text-muted mb-1">
-      <i class="fas fa-map-marker-alt me-1"></i>
-      Dirección de entrega
-    </p>
-    <p>{{order.Address.description}}</p>
+  {{!-- <section class="mb-4">
+    <h4 class="h6 mb-1">Dirección de entrega</h4>
+    <p class="fw-bold">{{order.address.name}}</p>
+    <p>{{order.address.description}}</p>
+  </section> --}}
+
+ {{#if (eq order.status 'EN PROCESO')}}
+    <section class="mb-4">
+      <h4 class="h6 mb-1">Dirección de entrega</h4>
+      <p class="fw-bold">{{order.address.name}}</p>
+      <p>{{order.address.description}}</p>
+    </section>
+  {{/if}}
+  
+  <section class="mb-4 d-flex justify-content-between">
+    <h4>Total</h4>
+    <h4 class="text-success">RD$ {{order.total}}</h4>
   </section>
 
-  <!-- TOTAL -->
-  <section class="mb-5">
-    <h4 class="h5">Total</h4>
-    <p class="fs-5 fw-bold">RD$ {{order.total}}</p>
-  </section>
-
-  <!-- BACK -->
-  <a href="/delivery/home" class="btn btn-outline-secondary">
-    ← Volver al tablero
-  </a>
+  <a href="/delivery/home" class="btn btn-outline-secondary">← Volver al tablero</a>
 </main>

@@ -85,7 +85,10 @@ const User = sequelize.define("user", {
     type: Sequelize.STRING,
     allowNull: true,
   },
-  
+  availability: {
+    type: Sequelize.ENUM('disponible','ocupado'),
+    allowNull: true,
+  }
 });
 
 module.exports = User;
