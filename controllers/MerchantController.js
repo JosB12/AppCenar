@@ -102,84 +102,15 @@ exports.getOrderDetail = async (req, res, next) => {
   }
 };
 
-// exports.assignDelivery = async (req, res, next) => {
-//   const orderId = req.params.orderId;
-
-//   try {
-//     const order = await Order.findOne({
-//       where: {
-//         id: orderId,
-//         merchantId: req.user.id,
-//         status: "PENDIENTE"
-//       }
-//     });
-
-//     if (!order) {
-//       req.flash("errors", "Pedido no válido o ya en proceso.");
-//       return res.redirect("/merchant/home");
-//     }
-
-//     // Buscar todos los repartidores activos con sus órdenes en proceso
-//     const deliveries = await User.findAll({
-//       where: {
-//         role: "delivery",
-//         active: true
-//       },
-//       include: [{
-//         model: Order,
-//         as: "deliveryOrders",
-//         where: { status: "EN PROCESO" },
-//         required: false
-//       }]
-//     });
-
-//     if (!deliveries.length) {
-//       req.flash("errors", "No hay repartidores activos disponibles en este momento. Intente más tarde.");
-//       return res.redirect(`/merchant/orders/${orderId}`);
-//     }
-
-//     // Ordenar por la menor cantidad de órdenes activas
-//     const sorted = deliveries
-//       .map(delivery => ({
-//         delivery,
-//         activeOrders: delivery.deliveryOrders?.length || 0
-//       }))
-//       .sort((a, b) => a.activeOrders - b.activeOrders);
-
-//     const selectedDelivery = sorted[0]?.delivery;
-
-//     if (!selectedDelivery) {
-//       req.flash("errors", "Error al asignar repartidor. Intenta nuevamente.");
-//       return res.redirect(`/merchant/orders/${orderId}`);
-//     }
-
-//     // Asignar delivery y actualizar estado
-//     order.deliveryId = selectedDelivery.id;
-//     order.status = "EN PROCESO";
-//     await order.save();
-
-//     req.flash("success", "Repartidor asignado exitosamente.");
-//     res.redirect("/merchant/home");
-
-//   } catch (error) {
-//     console.log("Error al asignar delivery:", error);
-//     next(error);
-//   }
-// };
-
-
-// controllers/MerchantController.js
-
 exports.assignDelivery = async (req, res, next) => {
   const orderId = req.params.orderId;
 
   try {
-    // 1) Buscar el pedido que aún está “pending” (pendiente)
     const order = await Order.findOne({
       where: {
         id: orderId,
         merchantId: req.user.id,
-        status: "PENDIENTE"            // coincide con el valor en la base de datos
+        status: "PENDIENTE"
       }
     });
 
@@ -188,8 +119,8 @@ exports.assignDelivery = async (req, res, next) => {
       return res.redirect("/merchant/home");
     }
 
-    // 2) Obtener todos los repartidores activos y disponibles
-    const disponibles = await User.findAll({
+    // Buscar todos los repartidores activos y disponibles
+    const deliveries = await User.findAll({
       where: {
         role: "delivery",
         active: true,
@@ -197,42 +128,109 @@ exports.assignDelivery = async (req, res, next) => {
       }
     });
 
-    if (disponibles.length === 0) {
-      req.flash("errors", "No hay repartidores disponibles en este momento. Intenta más tarde.");
+    if (!deliveries.length) {
+      req.flash("errors", "No hay repartidores disponibles en este momento. Intente más tarde.");
       return res.redirect(`/merchant/orders/${orderId}`);
     }
 
-    // 3) Calcular la carga (número de pedidos “EN PROCESO”) de cada repartidor
-    const cargas = await Promise.all(
-      disponibles.map(async d => {
-        const cuenta = await Order.count({
-          where: { deliveryId: d.id, status: "EN PROCESO" }
-        });
-        return { repartidor: d, carga: cuenta };
+    // Obtener la cantidad de órdenes por delivery
+    const deliveryWithCounts = await Promise.all(
+      deliveries.map(async (delivery) => {
+        const count = await Order.count({ where: { deliveryId: delivery.id } });
+        return { delivery, totalOrders: count };
       })
     );
 
-    // 4) Elegir el repartidor con menor carga
-    cargas.sort((a, b) => a.carga - b.carga);
-    const elegido = cargas[0].repartidor;
+    // Ordenar por la menor cantidad de pedidos hechos
+    const sorted = deliveryWithCounts.sort((a, b) => a.totalOrders - b.totalOrders);
+    const selectedDelivery = sorted[0].delivery;
 
-    // 5) Asignar el repartidor y cambiar el estado del pedido
-    order.deliveryId = elegido.id;
-    order.status     = "EN PROCESO";
+    // Asignar el repartidor
+    order.deliveryId = selectedDelivery.id;
+    order.status = "EN PROCESO";
     await order.save();
 
-    // 6) Marcar al repartidor como “ocupado”
-    elegido.availability = "ocupado";
-    await elegido.save();
+    // Marcar repartidor como ocupado
+    selectedDelivery.availability = "ocupado";
+    await selectedDelivery.save();
 
     req.flash("success", "Repartidor asignado exitosamente.");
     res.redirect("/merchant/home");
 
-  } catch (err) {
-    console.error("Error al asignar repartidor:", err);
-    next(err);
+  } catch (error) {
+    console.log("Error al asignar delivery:", error);
+    next(error);
   }
 };
+
+
+
+
+// controllers/MerchantController.js
+
+// exports.assignDelivery = async (req, res, next) => {
+//   const orderId = req.params.orderId;
+
+//   try {
+//     // 1) Buscar el pedido que aún está “pending” (pendiente)
+//     const order = await Order.findOne({
+//       where: {
+//         id: orderId,
+//         merchantId: req.user.id,
+//         status: "PENDIENTE"            // coincide con el valor en la base de datos
+//       }
+//     });
+
+//     if (!order) {
+//       req.flash("errors", "Pedido no válido o ya en proceso.");
+//       return res.redirect("/merchant/home");
+//     }
+
+//     // 2) Obtener todos los repartidores activos y disponibles
+//     const disponibles = await User.findAll({
+//       where: {
+//         role: "delivery",
+//         active: true,
+//         availability: "disponible"
+//       }
+//     });
+
+//     if (disponibles.length === 0) {
+//       req.flash("errors", "No hay repartidores disponibles en este momento. Intenta más tarde.");
+//       return res.redirect(`/merchant/orders/${orderId}`);
+//     }
+
+//     // 3) Calcular la carga (número de pedidos “EN PROCESO”) de cada repartidor
+//     const cargas = await Promise.all(
+//       disponibles.map(async d => {
+//         const cuenta = await Order.count({
+//           where: { deliveryId: d.id, status: "EN PROCESO" }
+//         });
+//         return { repartidor: d, carga: cuenta };
+//       })
+//     );
+
+//     // 4) Elegir el repartidor con menor carga
+//     cargas.sort((a, b) => a.carga - b.carga);
+//     const elegido = cargas[0].repartidor;
+
+//     // 5) Asignar el repartidor y cambiar el estado del pedido
+//     order.deliveryId = elegido.id;
+//     order.status     = "EN PROCESO";
+//     await order.save();
+
+//     // 6) Marcar al repartidor como “ocupado”
+//     elegido.availability = "ocupado";
+//     await elegido.save();
+
+//     req.flash("success", "Repartidor asignado exitosamente.");
+//     res.redirect("/merchant/home");
+
+//   } catch (err) {
+//     console.error("Error al asignar repartidor:", err);
+//     next(err);
+//   }
+// };
 
 //#endregion
 

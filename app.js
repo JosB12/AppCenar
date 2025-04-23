@@ -284,18 +284,18 @@ User.hasMany(Favorite, {
 
 
 // correr para crear base de datos y comentar el siguiente bloque de codigo
-// sequelize
-//   .sync() // Puedes agregar { force: true } si deseas recrear las tablas cada vez (para desarrollo)
-//   .then(() => {
-//     console.log("Tablas sincronizadas con la base de datos.");
-//     app.listen(PORT, () => {
-//       console.log(`Servidor en http://localhost:${PORT}`);
-//     });
-//   })
-//   .catch((err) =>
-//     console.error("Error al sincronizar las tablas:", err)
-//   );
-
+sequelize
+.sync() // Puedes agregar { force: true } si deseas recrear las tablas cada vez (para desarrollo)
+.then(() => {
+  console.log("Tablas sincronizadas con la base de datos.");
   app.listen(PORT, () => {
     console.log(`Servidor en http://localhost:${PORT}`);
-});
+  });
+})
+.catch((err) =>
+  console.error("Error al sincronizar las tablas:", err)
+);
+
+//   app.listen(PORT, () => {
+//     console.log(`Servidor en http://localhost:${PORT}`);
+// });
