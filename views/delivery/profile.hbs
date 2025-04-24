@@ -1,0 +1,45 @@
+{{#if successMessages}}
+  <div class="alert alert-success alert-dismissible fade show">
+    <ul>
+      {{#each successMessages}}
+        <li>{{this}}</li>
+      {{/each}}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+{{/if}}
+<h1>Your Profile</h1>
+<form action="/delivery/profile" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+  <div class="mb-3">
+    <label class="form-label">Nombre</label>
+    <input type="text" name="firstName" class="form-control" value="{{user.firstName}}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Apellido</label>
+    <input type="text" name="lastName" class="form-control" value="{{user.lastName}}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Telefono</label>
+    <input type="text" name="phone" class="form-control" value="{{user.phone}}" required>
+  </div>
+  <div class="form-group">
+      <label>Foto actual:</label>
+      <div class="d-flex align-items-center mt-2 mb-3">
+        {{#if user.profilePhoto}}
+          <div class="border rounded p-2 bg-light shadow-sm">
+            <img src="/images/{{user.profilePhoto}}" alt="Foto de perfil" width="160" height="160" style="object-fit: contain;">
+          
+          </div>
+        {{else}}
+          <p class="text-muted">No hay foto subida</p>
+        {{/if}}
+      </div>
+  <div class="mb-3">
+    <label class="form-label">Profile Photo</label>
+    <input type="file" name="profilePhoto" class="form-control">
+  </div>
+  <button class="btn btn-primary">Save Changes</button>
+  <a href="/delivery/home" class="btn btn-secondary ms-2">Back</a>
+</form>
+

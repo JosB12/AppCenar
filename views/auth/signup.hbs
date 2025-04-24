@@ -1,0 +1,70 @@
+<main class="container">
+  <h1 class="mb-4">Sign Up</h1>
+  <!-- Se utiliza enctype para permitir la subida de archivos -->
+  <form action="/signup" method="POST" enctype="multipart/form-data">
+    <!-- Campo CSRF para seguridad -->
+    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+    
+    <!-- Primer nombre -->
+    <div class="mb-3">
+      <label for="firstName" class="form-label">First Name</label>
+      <input type="text" class="form-control" name="firstName" id="firstName" placeholder="Enter your first name" required>
+    </div>
+    
+    <!-- Apellido -->
+    <div class="mb-3">
+      <label for="lastName" class="form-label">Last Name</label>
+      <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Enter your last name" required>
+    </div>
+    
+    <!-- Teléfono -->
+    <div class="mb-3">
+      <label for="phone" class="form-label">Phone</label>
+      <input type="text" class="form-control" name="phone" id="phone" placeholder="Enter your phone number" required>
+    </div>
+    
+    <!-- Email -->
+    <div class="mb-3">
+      <label for="email" class="form-label">Email address</label>
+      <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com" required>
+    </div>
+    
+    <!-- Foto de perfil -->
+    <div class="mb-3">
+      <label for="profilePhoto" class="form-label">Profile Photo</label>
+      <input type="file" class="form-control" name="profilePhoto" id="profilePhoto" required>
+    </div>
+    
+    <!-- Nombre de usuario -->
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" class="form-control" name="username" id="username" placeholder="Choose a username" required>
+    </div>
+    
+    <!-- Selección del rol -->
+    <div class="mb-3">
+      <label for="role" class="form-label">Role</label>
+      <select class="form-select" name="role" id="role" required>
+        <option value="customer">Cliente</option>
+        <option value="delivery">Delivery</option>
+      </select>
+    </div>
+    
+    <!-- Contraseña -->
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" name="password" id="password" placeholder="Enter password" required>
+    </div>
+    
+    <!-- Confirmar contraseña -->
+    <div class="mb-3">
+      <label for="confirmPassword" class="form-label">Confirm Password</label>
+      <input type="password" class="form-control" name="confirmPassword" id="confirmPassword" placeholder="Confirm password" required>
+    </div>
+    
+    <!-- Botón para enviar el formulario -->
+    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+    <!-- Enlace para volver a la página de login -->
+    <a href="/login" class="btn btn-warning w-100 mt-2">Back</a>
+  </form>
+</main>

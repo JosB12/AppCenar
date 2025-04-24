@@ -1,0 +1,642 @@
+// controllers/CustomerController.js
+const MerchantType = require("../models/MerchantType");
+const Order = require("../models/Order");
+const OrderProduct = require("../models/OrderProduct");
+const Address = require("../models/Address");
+const User = require("../models/User");
+const Favorite = require("../models/Favorite");
+const Category = require("../models/Category");
+const Product = require("../models/Product");
+const Configuration = require("../models/Configuration");
+const { Op } = require("sequelize");
+
+
+
+
+//#region Home del cliente
+// Muestra todos los tipos de comercios en el home del cliente
+exports.getCustomerHome = async (req, res, next) => {
+  try {
+    const merchantTypes = await MerchantType.findAll();
+    res.render("customer/home", {
+      pageTitle: "Home",
+      merchantTypes
+    });
+  } catch (error) {
+    console.log("Error en getCustomerHome:", error);
+    next(error);
+  }
+};
+
+// Muestra todos los comercios filtrados por tipo
+exports.getMerchantsByType = async (req, res, next) => {
+  const typeId = req.params.typeId;
+  const searchTerm = req.query.search || "";
+
+  try {
+    // Buscar comercios activos por tipo y filtro de nombre
+    const merchants = await User.findAll({
+      where: {
+        role: "merchant",
+        merchantTypeId: typeId,
+        active: true,
+        merchantName: {
+          [Op.like]: `%${searchTerm}%`
+        }
+      }
+    });
+
+    // Buscar favoritos del usuario actual
+    const favorites = await Favorite.findAll({
+      where: { customerId: req.user.id },
+      attributes: ["merchantId"]
+    });
+
+    const favoriteIds = favorites.map(fav => fav.merchantId);
+
+    // Agregar isFavorite a cada merchant
+    const merchantsWithFlags = merchants.map(m => ({
+      ...m.toJSON(),
+      isFavorite: favoriteIds.includes(m.id)
+    }));
+
+    res.render("customer/merchants-by-type", {
+      pageTitle: "Comercios",
+      merchants: merchantsWithFlags,
+      csrfToken: req.csrfToken(),
+      searchTerm
+    });
+  } catch (error) {
+    console.log("Error en getMerchantsByType:", error);
+    next(error);
+  }
+};
+//#endregion
+
+//#region Perfil cliente
+// GET: Mostrar perfil del cliente
+exports.getProfile = (req, res, next) => {
+  res.render("customer/profile", {
+    pageTitle: "Mi Perfil",
+    user: req.user
+  });
+};
+
+// POST: Actualizar perfil del cliente
+exports.postProfile = async (req, res, next) => {
+  const { firstName, lastName, phone } = req.body;
+
+  try {
+    const updates = {
+      firstName,
+      lastName,
+      phone
+    };
+
+    // Buscar archivo en req.files (porque se usa .any() en multer)
+    const photoFile = req.files?.find(file => file.fieldname === "profilePhoto");
+    if (photoFile) {
+      updates.profilePhoto = photoFile.filename;
+    }
+
+    await req.user.update(updates);
+    res.redirect("/customer/profile");
+  } catch (error) {
+    console.error("Error en postProfile de cliente:", error);
+    next(error);
+  }
+};
+
+//#endregion
+
+
+// Lista las órdenes (orders) realizadas por el cliente, ordenadas de la más reciente a la más antigua
+exports.GetOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.findAll({
+      where: { customerId: req.user.id },
+      order: [["orderDateTime", "DESC"]],
+    });
+    res.render("customer/orders", {
+      pageTitle: "My Orders",
+      orders: orders,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+// Muestra el detalle de una orden específica
+exports.GetOrderDetail = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  try {
+    const order = await Order.findByPk(orderId, {
+      include: [
+        { model: OrderProduct },
+        { model: User, as: "merchant" }
+      ],
+    });
+    if (!order) {
+      req.flash("errors", "Order not found");
+      return res.redirect("/customer/orders");
+    }
+    res.render("customer/order-detail", {
+      pageTitle: "Order Details",
+      order: order,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+//#region Direcciones
+exports.getAddresses = async (req, res, next) => {
+  try {
+    const addresses = await Address.findAll({
+      where: { customerId: req.user.id }
+    });
+
+    res.render("customer/addresses", {
+      pageTitle: "Mis direcciones",
+      addresses
+    });
+  } catch (error) {
+    console.log("Error en getAddresses:", error);
+    next(error);
+  }
+};
+
+// Mostrar formulario para crear dirección
+exports.getCreateAddress = (req, res) => {
+  res.render("customer/addresses-create", {
+    pageTitle: "Agregar dirección",
+    csrfToken: req.csrfToken()
+  });
+};
+
+// Guardar nueva dirección
+exports.postCreateAddress = async (req, res, next) => {
+  const { name, description } = req.body;
+
+  try {
+    await Address.create({
+      name,
+      description,
+      customerId: req.user.id
+    });
+
+    res.redirect("/customer/addresses");
+  } catch (error) {
+    console.log("Error al crear dirección:", error);
+    next(error);
+  }
+};
+
+// Mostrar formulario para editar dirección
+exports.getEditAddress = async (req, res, next) => {
+  try {
+    const address = await Address.findOne({
+      where: { id: req.params.addressId, customerId: req.user.id }
+    });
+
+    if (!address) return res.redirect("/customer/addresses");
+
+    res.render("customer/addresses-edit", {
+      pageTitle: "Editar dirección",
+      address,
+      csrfToken: req.csrfToken()
+    });
+  } catch (error) {
+    console.log("Error en getEditAddress:", error);
+    next(error);
+  }
+};
+
+// Guardar edición de dirección
+exports.postEditAddress = async (req, res, next) => {
+  const { id, name, description } = req.body;
+
+  try {
+    const address = await Address.findOne({
+      where: { id, customerId: req.user.id }
+    });
+
+    if (!address) return res.redirect("/customer/addresses");
+
+    address.name = name;
+    address.description = description;
+
+    await address.save();
+    res.redirect("/customer/addresses");
+  } catch (error) {
+    console.log("Error al editar dirección:", error);
+    next(error);
+  }
+};
+
+// Confirmar eliminación de dirección
+exports.getConfirmDeleteAddress = async (req, res, next) => {
+  try {
+    const address = await Address.findOne({
+      where: { id: req.params.addressId, customerId: req.user.id }
+    });
+
+    if (!address) return res.redirect("/customer/addresses");
+
+    res.render("customer/addresses-delete", {
+      pageTitle: "Eliminar dirección",
+      address,
+      csrfToken: req.csrfToken()
+    });
+  } catch (error) {
+    console.log("Error en getConfirmDeleteAddress:", error);
+    next(error);
+  }
+};
+
+// Eliminar dirección
+exports.postDeleteAddress = async (req, res, next) => {
+  const { id } = req.body;
+
+  try {
+    await Address.destroy({
+      where: { id, customerId: req.user.id }
+    });
+
+    res.redirect("/customer/addresses");
+  } catch (error) {
+    console.log("Error al eliminar dirección:", error);
+    next(error);
+  }
+};
+
+//#endregion 
+
+//#region Favoritos
+// Lista los merchants marcados como favoritos por el cliente
+exports.GetFavorites = async (req, res, next) => {
+  try {
+    const favorites = await Favorite.findAll({
+      where: { customerId: req.user.id },
+      include: [{ model: User, as: "merchant" }],
+    });
+    res.render("customer/favorites", {
+      pageTitle: "My Favorites",
+      favorites: favorites,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+exports.addFavorite = async (req, res, next) => {
+  const customerId = req.user.id;
+  const merchantId = req.params.merchantId;
+
+  try {
+    const exists = await Favorite.findOne({ where: { customerId, merchantId } });
+    if (!exists) {
+      await Favorite.create({ customerId, merchantId });
+    }
+    res.redirect("back");
+  } catch (error) {
+    console.log("Error al agregar favorito:", error);
+    next(error);
+  }
+};
+exports.removeFavorite = async (req, res, next) => {
+  const customerId = req.user.id;
+  const merchantId = req.params.merchantId;
+
+  try {
+    await Favorite.destroy({ where: { customerId, merchantId } });
+    res.redirect("back");
+  } catch (error) {
+    console.log("Error al quitar favorito:", error);
+    next(error);
+  }
+};
+
+//#endregion
+
+
+//#region Catalogo productos
+exports.getMerchantCatalog = async (req, res, next) => {
+  const merchantId = req.params.merchantId;
+
+  try {
+    const merchant = await User.findOne({
+      where: { id: merchantId, role: "merchant", active: true }
+    });
+    if (!merchant) return res.status(404).send("Comercio no encontrado");
+
+    const categories = await Category.findAll({
+      where: { merchantId },
+      include: [{
+        model: Product,
+        where: { merchantId },
+        required: false
+      }],
+      order: [["name", "ASC"]]
+    });
+
+    const cart = req.session.cart || {};
+    const cartKeys = Object.keys(cart);
+    const subtotal = cartKeys.reduce((sum, key) => sum + cart[key].price, 0);
+
+    const addresses = await Address.findAll({ where: { customerId: req.user.id } });
+    const hasAddresses = addresses.length > 0;
+
+
+    res.render("customer/catalog", {
+      pageTitle: `Catálogo de ${merchant.merchantName}`,
+      merchant,
+      categories,
+      cart,
+      cartKeys,
+      subtotal,
+      hasAddresses,
+      csrfToken: req.csrfToken()   // ← MUY IMPORTANTE
+    });
+  } catch (error) {
+    console.log("Error en getMerchantCatalog:", error);
+    next(error);
+  }
+};
+
+exports.addToCart = (req, res) => {
+  const { productId, name, price, merchantId } = req.body;
+
+  if (!req.session.cart) req.session.cart = {};
+  if (!req.session.cart[productId]) {
+    req.session.cart[productId] = {
+      name,
+      price: parseFloat(price)
+    };
+  }
+
+  res.redirect(`/customer/catalog/${merchantId}`);
+};
+
+exports.removeFromCart = (req, res) => {
+  const { productId, merchantId } = req.body;
+
+  try {
+    if (req.session.cart && req.session.cart[productId]) {
+      delete req.session.cart[productId];
+    }
+  } catch (error) {
+    console.log("Error al eliminar del carrito:", error);
+  }
+
+  res.redirect(`/customer/catalog/${merchantId}`);
+};
+
+exports.getCheckout = async (req, res, next) => {
+  const customerId = req.user.id;
+  const merchantId = parseInt(req.params.merchantId); // asegúrate de convertir a número
+  const cart = req.session.cart || {};
+  const cartKeys = Object.keys(cart);
+
+  if (!merchantId || isNaN(merchantId)) {
+    return res.status(400).send("ID de comercio inválido");
+  }
+
+  if (cartKeys.length === 0) {
+    return res.redirect(`/customer/catalog/${merchantId}`);
+  }
+
+  try {
+    // 1. Direcciones del cliente
+    const addresses = await Address.findAll({ where: { customerId: customerId } });
+
+    // 2. Info del comercio
+    const merchant = await User.findOne({
+      where: { id: merchantId, role: "merchant", active: true },
+      attributes: ["id", "merchantName", "merchantLogo"] // ✅ INCLUYE EL ID
+    });
+
+    if (!merchant) {
+      return res.status(404).send("Comercio no encontrado");
+    }
+
+    // 3. Configuración ITBIS
+    const config = await Configuration.findOne();
+    const itbisValue = parseFloat(config?.itbis || 0);
+
+    // 4. Subtotal, ITBIS y total
+    const subtotal = cartKeys.reduce((sum, key) => sum + parseFloat(cart[key].price || 0), 0);
+    const itbisAmount = (subtotal * itbisValue) / 100;
+    const total = subtotal + itbisAmount;
+
+    res.render("customer/checkout", {
+      pageTitle: "Confirmar Pedido",
+      addresses,
+      merchant,
+      cart,
+      cartKeys,
+      subtotal: subtotal.toFixed(2),
+      itbisValue,
+      itbisAmount: itbisAmount.toFixed(2),
+      total: total.toFixed(2),
+      csrfToken: req.csrfToken()
+    });
+  } catch (error) {
+    console.log("Error en getCheckout:", error);
+    next(error);
+  }
+};
+exports.postCheckout = async (req, res, next) => {
+  console.log("POST /checkout recibido", req.body);
+  const customerId = req.user.id;
+  const merchantId = parseInt(req.params.merchantId); // ← corregido aquí
+  const { addressId } = req.body;
+
+  const cart = req.session.cart || {};
+  const cartKeys = Object.keys(cart);
+
+  if (!merchantId || isNaN(merchantId)) {
+    return res.status(400).send("ID de comercio inválido");
+  }
+
+  if (cartKeys.length === 0) {
+    return res.redirect(`/customer/catalog/${merchantId}`);
+  }
+
+  if (!addressId) {
+    return res.status(400).send("Debe seleccionar una dirección");
+  }
+
+  try {
+    const config = await Configuration.findOne();
+    const itbisValue = parseFloat(config?.itbis || 0);
+    const subtotal = cartKeys.reduce((sum, key) => sum + parseFloat(cart[key].price || 0), 0);
+    const itbisAmount = (subtotal * itbisValue) / 100;
+    const total = subtotal + itbisAmount;
+
+    const newOrder = await Order.create({
+      status: "pendiente",
+      orderDateTime: new Date(),
+      subtotal,
+      total,
+      customerId,
+      merchantId,
+      addressId
+    });
+
+    const productsToSave = cartKeys.map(productId => ({
+      orderId: newOrder.id,
+      productId: parseInt(productId), // ← clave para luego buscar la imagen
+      name: cart[productId].name,
+      price: cart[productId].price
+    }));
+
+    await OrderProduct.bulkCreate(productsToSave);
+
+    req.session.cart = {};
+    console.log("merchantId:", merchantId);
+    console.log("addressId:", addressId);
+    console.log("cart:", req.session.cart);
+
+    req.flash("success", "¡Pedido realizado con éxito!");
+    return res.redirect("/customer/home");
+
+
+    // return res.redirect("/customer/home"); // ← redirección final
+  } catch (error) {
+    console.log("Error al procesar el pedido:", error);
+    next(error);
+  }
+};
+
+
+
+//#endregion
+
+
+//#region pedidos/ordenes
+exports.getCustomerOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.findAll({
+      where: { customerId: req.user.id },
+      include: [
+        {
+          model: User,
+          as: "merchant",
+          attributes: ["merchantName", "merchantLogo"]
+        },
+        {
+          model: OrderProduct,
+          as: "order_products",
+          attributes: ["id"]
+        }
+      ],
+      order: [["orderDateTime", "DESC"]]
+    });
+
+    const formattedOrders = orders
+      .filter(order => order.merchant) // Filtra solo los que tienen merchant
+      .map(order => {
+        const totalProducts = order.order_products.length;
+        const formattedDate = new Date(order.orderDateTime).toLocaleDateString("es-DO", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        });
+        const formattedTime = new Date(order.orderDateTime).toLocaleTimeString("es-DO", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        });
+
+        return {
+          id: order.id,
+          status: order.status,
+          total: order.total,
+          formattedDate,
+          formattedTime,
+          totalProducts,
+          merchant: {
+            merchantName: order.merchant.merchantName,
+            merchantLogo: order.merchant.merchantLogo
+          }
+        };
+      });
+    //console.log(JSON.stringify(orders, null, 2));
+
+
+    res.render("customer/orders", {
+      pageTitle: "Mis pedidos",
+      orders: formattedOrders
+    });
+  } catch (error) {
+    console.log("Error en getCustomerOrders:", error);
+    next(error);
+  }
+};
+
+
+
+exports.getOrderDetails = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  const customerId = req.user.id;
+
+  try {
+    const order = await Order.findOne({
+      where: {
+        id: orderId,
+        customerId: customerId
+      },
+      include: [
+        {
+          model: User,
+          as: "merchant",
+          attributes: ["merchantName", "merchantLogo"]
+        },
+        {
+          model: OrderProduct,
+          as: "order_products",
+          include: [
+            {
+              model: Product,
+              attributes: ["image"]
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!order) {
+      return res.status(404).render("404", {
+        pageTitle: "Pedido no encontrado"
+      });
+    }
+
+    const formattedDate = order.orderDateTime.toLocaleDateString("es-DO", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+
+    const formattedTime = order.orderDateTime.toLocaleTimeString("es-DO", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    res.render("customer/order-detail", {
+      pageTitle: `Detalle del Pedido #${order.id}`,
+      order,
+      formattedDate,
+      formattedTime
+    });
+
+  } catch (error) {
+    console.log("Error al obtener el detalle del pedido:", error);
+    next(error);
+  }
+};
+
+//#endregion

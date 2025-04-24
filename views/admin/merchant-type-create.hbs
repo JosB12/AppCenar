@@ -1,0 +1,19 @@
+{{!-- views/admin/merchant-type-create.hbs --}}
+<h1>Crear Tipo de Comercio</h1>
+<form action="/admin/merchant-types" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+  <div class="mb-3">
+    <label class="form-label">Nombre</label>
+    <input type="text" name="name" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Descripción</label>
+    <input type="text" name="description" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Icono</label>
+    <input type="file" name="icon" class="form-control" required>
+  </div>
+  <button class="btn btn-success">Crear</button>
+  <a href="/admin/merchant-types" class="btn btn-secondary ms-2">Volver</a>
+</form>

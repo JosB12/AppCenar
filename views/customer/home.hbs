@@ -1,0 +1,33 @@
+<main class="container mt-5">
+  {{#if successMessages.length}}
+    <div class="alert alert-success text-center">
+      {{successMessages.[0]}}
+    </div>
+  {{/if}}
+  <h2 class="mb-5 text-center">Hola, ¿Qué vas a pedir hoy?</h2>
+
+  <div class="row justify-content-center">
+    {{#each merchantTypes}}
+      <div class="col-6 col-md-4 col-lg-3 mb-4">
+        <a href="/customer/merchants/type/{{this.id}}" class="text-decoration-none text-dark">
+          <div class="card shadow-sm text-center h-100 border-0" style="cursor: pointer; min-height: 280px;">
+            {{#if this.icon}}
+              <div class="d-flex align-items-center justify-content-center p-3" style="height: 220px;">
+                <img 
+                  src="/images/{{this.icon}}" 
+                  alt="{{this.name}}" 
+                  class="img-fluid rounded" 
+                  style="max-height: 200px; object-fit: contain;">
+              </div>
+            {{else}}
+              <div class="p-5 bg-light">Sin imagen</div>
+            {{/if}}
+            <div class="card-body bg-light">
+              <h5 class="card-title fw-bold mb-0">{{this.name}}</h5>
+            </div>
+          </div>
+        </a>
+      </div>
+    {{/each}}
+  </div>
+</main>

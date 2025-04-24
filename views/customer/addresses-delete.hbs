@@ -1,0 +1,18 @@
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h3 class="text-danger text-center mb-4">¿Está seguro que desea eliminar esta dirección?</h3>
+
+    <div class="mb-4 text-center">
+      <p><strong>Nombre:</strong> {{address.name}}</p>
+      <p><strong>Descripción:</strong> {{address.description}}</p>
+    </div>
+
+    <form action="/customer/addresses/delete" method="POST" class="text-center">
+      <input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <input type="hidden" name="id" value="{{address.id}}">
+
+      <button type="submit" class="btn btn-danger px-4 mr-2">Eliminar</button>
+      <a href="/customer/addresses" class="btn btn-secondary px-4">Cancelar</a>
+    </form>
+  </div>
+</div>

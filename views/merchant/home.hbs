@@ -1,0 +1,69 @@
+<main class="container mt-5">
+  <h2 class="mb-4 text-center">{{pageTitle}}</h2>
+ 
+  {{#if successMessages.length}}
+    <div class="alert alert-success text-center">
+      {{successMessages.[0]}}
+    </div>
+  {{/if}}
+
+  {{#if errorMessages.length}}
+    <div class="alert alert-danger text-center">
+      {{errorMessages.[0]}}
+    </div>
+  {{/if}}
+
+  {{#if orders.length}}
+    <table class="table table-bordered table-striped shadow-sm">
+      <thead class="thead-dark">
+        <tr>
+          <th># Pedido</th>
+          <th>Comercio</th>
+          <th>Logo</th>
+          <th>Estado</th>
+          <th>Total</th>
+          <th>Productos</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each orders}}
+          <tr class="clickable-row" onclick="window.location='/merchant/orders/{{this.id}}'">
+            <td><strong>#{{this.id}}</strong></td>
+            <td>{{this.merchant.merchantName}}</td>
+            <td>
+              {{#if this.merchant.merchantLogo}}
+                <img src="/images/{{this.merchant.merchantLogo}}" alt="Logo" width="40" class="rounded-circle">
+              {{else}}
+                <span class="text-muted">Sin logo</span>
+              {{/if}}
+            </td>
+            <td class="{{#if (eq status 'pendiente')}}text-warning{{else if (eq status 'EN PROCESO')}}text-info{{else}}text-success{{/if}}">
+              {{this.status}}
+            </td>
+            <td>RD$ {{this.total}}</td>
+            <td>{{this.totalProducts}}</td>
+            <td>{{this.formattedDate}}</td>
+            <td>{{this.formattedTime}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <div class="alert alert-info text-center">
+      No tienes pedidos aún.
+    </div>
+  {{/if}}
+</main>
+
+<style>
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .clickable-row:hover {
+    background-color: #f2f2f2;
+  }
+</style>

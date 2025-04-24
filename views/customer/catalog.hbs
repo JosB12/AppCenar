@@ -1,0 +1,105 @@
+{{!-- views/customer/catalog.hbs --}}
+<main class="container mt-4">
+  <h2 class="mb-4 text-center">{{pageTitle}}</h2>
+
+  <div class="row">
+    <!-- Catálogo -->
+    <div class="col-lg-8">
+      {{#each categories}}
+      {{#if this.products.length}}
+      <h5 class="mb-3 mt-4">{{this.name}}</h5>
+      <div class="row g-3">
+        {{#each this.products}}
+        <div class="col-md-6">
+          <div class="card h-100 shadow-sm">
+            {{#if this.image}}
+            <img src="/images/{{this.image}}" class="card-img-top" style="height:180px;object-fit:cover;"
+              alt="{{this.name}}">
+            {{/if}}
+            <div class="card-body">
+              <h6 class="card-title">{{this.name}}</h6>
+              {{#if this.description}}
+              <p class="card-text small text-muted">{{this.description}}</p>
+              {{/if}}
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+              <span class="fw-bold">RD$ {{this.price}}</span>
+
+              {{!-- Solo muestro "Agregar" si NO está en el carrito --}}
+              {{#unless (lookup @root.cart this.id)}}
+              <form method="POST" action="/customer/cart/add" class="mb-0">
+                <input type="hidden" name="_csrf" value="{{@root.csrfToken}}">
+                <input type="hidden" name="merchantId" value="{{@root.merchant.id}}">
+                <input type="hidden" name="productId" value="{{this.id}}">
+                <input type="hidden" name="name" value="{{this.name}}">
+                <input type="hidden" name="price" value="{{this.price}}">
+                <button type="submit" class="btn btn-danger btn-sm">Agregar</button>
+              </form>
+              {{/unless}}
+
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+      {{/each}}
+
+      <a href="/customer/merchants/type/{{@root.merchant.merchantTypeId}}" class="btn btn-outline-secondary mt-3">
+        ← Volver a comercios
+      </a>
+    </div>
+
+    <!-- Mi pedido -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Mi pedido</h5>
+
+          {{#if @root.cartKeys.length}}
+          <ul class="list-group mb-3">
+            {{#each @root.cartKeys as |productKey|}}
+            {{#with (lookup @root.cart productKey) as |item|}}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{item.name}}</strong>
+                <form method="POST" action="/customer/cart/remove" class="d-inline ms-2">
+                  <input type="hidden" name="_csrf" value="{{@root.csrfToken}}">
+                  <input type="hidden" name="merchantId" value="{{@root.merchant.id}}">
+                  <input type="hidden" name="productId" value="{{productKey}}">
+                  <button type="submit" class="btn btn-link btn-sm text-danger p-0">Eliminar</button>
+                </form>
+              </div>
+              <span>RD$ {{item.price}}</span>
+            </li>
+            {{/with}}
+            {{/each}}
+          </ul>
+
+          <p class="text-end">
+            <strong>Subtotal: RD$ {{@root.subtotal}}</strong>
+          </p>
+
+          {{!-- Validación de direcciones --}}
+          {{#if @root.hasAddresses}}
+          <form method="GET" action="/customer/checkout/{{@root.merchant.id}}">
+            <button type="submit" class="btn btn-danger w-100">Continuar</button>
+          </form>
+          {{else}}
+          <div class="alert alert-warning text-center">
+            Debes <a href="/customer/addresses">registrar una dirección</a> para continuar con el pedido.
+          </div>
+          {{/if}}
+
+          {{else}}
+          <div class="text-center text-muted py-5">
+            <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+            <p>Tu pedido está vacío</p>
+          </div>
+          {{/if}}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

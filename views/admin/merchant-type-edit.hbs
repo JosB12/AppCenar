@@ -1,0 +1,27 @@
+{{!-- views/admin/merchant-type-edit.hbs --}}
+<h1>Editar Tipo de Comercio</h1>
+<form action="/admin/merchant-types/{{type.id}}" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+  <div class="mb-3">
+    <label class="form-label">Nombre</label>
+    <input type="text" name="name" class="form-control" value="{{type.name}}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Descripción</label>
+    <input type="text" name="description" class="form-control" value="{{type.description}}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Icono Actual</label><br/>
+    {{#if type.icon}}
+      <img src="/images/{{type.icon}}" alt="Icono" width="50"/>
+    {{else}}
+      <p class="text-muted">Sin icono</p>
+    {{/if}}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Nuevo Icono (opcional)</label>
+    <input type="file" name="icon" class="form-control">
+  </div>
+  <button class="btn btn-primary">Guardar</button>
+  <a href="/admin/merchant-types" class="btn btn-secondary ms-2">Volver</a>
+</form>
