@@ -21,7 +21,7 @@
   <div class="list-group">
     {{#each merchants}}
     <div class="list-group-item d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center">
+      <a href="/customer/catalog/{{this.id}}" class="d-flex align-items-center text-decoration-none text-dark flex-grow-1">
         {{#if this.merchantLogo}}
         <img src="/images/{{this.merchantLogo}}" alt="{{this.merchantName}}" class="rounded mr-3"
           style="width: 60px; height: 60px; object-fit: contain;">
@@ -31,20 +31,17 @@
         {{/if}}
 
         <strong class="ml-2">{{this.merchantName}}</strong>
-      </div>
+      </a>
 
       <!-- Formulario de favorito -->
       <form method="POST" action="/customer/favorites/{{this.id}}/{{#if this.isFavorite}}remove{{else}}add{{/if}}">
         <input type="hidden" name="_csrf" value="{{../csrfToken}}">
-
         <button type="submit"
           class="btn btn-sm px-3 {{#if this.isFavorite}}btn-danger text-white{{else}}btn-outline-danger{{/if}}"
           title="{{#if this.isFavorite}}Quitar de favoritos{{else}}Agregar a favoritos{{/if}}">
           {{#if this.isFavorite}}❤️{{else}}❤️{{/if}}
         </button>
       </form>
-
-
     </div>
     {{/each}}
   </div>

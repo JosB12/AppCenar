@@ -12,7 +12,11 @@
   </div>
   <div class="mb-3">
     <label class="form-label">Icono Actual</label><br/>
-    <img src="/{{type.icon}}" alt="Icono" width="50"/>
+    {{#if type.icon}}
+      <img src="/images/{{type.icon}}" alt="Icono" width="50"/>
+    {{else}}
+      <p class="text-muted">Sin icono</p>
+    {{/if}}
   </div>
   <div class="mb-3">
     <label class="form-label">Nuevo Icono (opcional)</label>

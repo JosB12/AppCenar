@@ -1,26 +1,71 @@
-<h1>Order #{{order.id}} Detail</h1>
-<p><strong>Merchant:</strong> {{order.merchant.merchantName}}</p>
-<p><strong>Status:</strong> {{order.status}}</p>
-<p><strong>Placed at:</strong> {{order.createdAt}}</p>
+{{!-- views/delivery/order-detail.hbs --}}
+<main class="container py-4">
+  <div class="text-center mb-5">
+    {{#if order.merchant.merchantLogo}}
+      <img src="/images/{{order.merchant.merchantLogo}}"
+           alt="{{order.merchant.merchantName}}"
+           class="mb-3 rounded"
+           style="width:80px; height:80px; object-fit:cover;">
+    {{/if}}
+    <h2 class="h5 mb-1">{{order.merchant.merchantName}}</h2>
 
-<h3>Products</h3>
-<ul class="list-group mb-3">
-  {{#each order.orderProducts}}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <img src="/{{product.imagePath}}" width="40" class="me-2"/>
-      {{product.name}}
-      <span>{{product.price}}</span>
-    </li>
-  {{/each}}
-</ul>
+    <span class="badge
+      {{#if (eq order.status 'EN PROCESO')}}bg-warning text-dark
+      {{else if (eq order.status 'COMPLETADO')}}bg-success
+      {{else}}bg-secondary{{/if}}">
+      {{order.status}}
+    </span>
 
-<p><strong>Total:</strong> {{order.total}}</p>
+    <p class="text-muted small mt-1">
+      {{order.formattedDate}} · {{order.formattedTime}}
+    </p>
+  </div>
 
-{{#if (eq order.status "in process")}}
-  <form action="/delivery/order/{{order.id}}/complete" method="POST">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
-    <button class="btn btn-success">Complete Order</button>
-  </form>
-{{/if}}
+  {{#if (eq order.status 'EN PROCESO')}}
+    <form action="/delivery/order/{{order.id}}/complete" method="POST" class="mb-5">
+      <input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <button class="btn btn-danger w-100">Completar el pedido</button>
+    </form>
+  {{/if}}
 
-<a href="/delivery/home" class="btn btn-secondary mt-3">Back</a>
+  <section class="mb-4">
+    <h4 class="h6 mb-3">Productos</h4>
+    <ul class="list-group">
+      {{#each order.order_products}}
+        <li class="list-group-item d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            {{#if this.product.image}}
+              <img src="/images/{{this.product.image}}"
+                   alt="{{this.product.name}}"
+                   class="rounded me-3"
+                   style="width:48px; height:48px; object-fit:cover;">
+            {{/if}}
+            <span>{{this.product.name}}</span>
+          </div>
+          <span class="fw-bold">RD$ {{this.price}}</span>
+        </li>
+      {{/each}}
+    </ul>
+  </section>
+
+  {{!-- <section class="mb-4">
+    <h4 class="h6 mb-1">Dirección de entrega</h4>
+    <p class="fw-bold">{{order.address.name}}</p>
+    <p>{{order.address.description}}</p>
+  </section> --}}
+
+ {{#if (eq order.status 'EN PROCESO')}}
+    <section class="mb-4">
+      <h4 class="h6 mb-1">Dirección de entrega</h4>
+      <p class="fw-bold">{{order.address.name}}</p>
+      <p>{{order.address.description}}</p>
+    </section>
+  {{/if}}
+  
+  <section class="mb-4 d-flex justify-content-between">
+    <h4>Total</h4>
+    <h4 class="text-success">RD$ {{order.total}}</h4>
+  </section>
+
+  <a href="/delivery/home" class="btn btn-outline-secondary">← Volver al tablero</a>
+</main>

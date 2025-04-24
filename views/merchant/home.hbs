@@ -1,5 +1,17 @@
 <main class="container mt-5">
   <h2 class="mb-4 text-center">{{pageTitle}}</h2>
+ 
+  {{#if successMessages.length}}
+    <div class="alert alert-success text-center">
+      {{successMessages.[0]}}
+    </div>
+  {{/if}}
+
+  {{#if errorMessages.length}}
+    <div class="alert alert-danger text-center">
+      {{errorMessages.[0]}}
+    </div>
+  {{/if}}
 
   {{#if orders.length}}
     <table class="table table-bordered table-striped shadow-sm">
@@ -27,7 +39,7 @@
                 <span class="text-muted">Sin logo</span>
               {{/if}}
             </td>
-            <td class="{{#if (eq status 'pending')}}text-warning{{else if (eq status 'processing')}}text-info{{else}}text-success{{/if}}">
+            <td class="{{#if (eq status 'pendiente')}}text-warning{{else if (eq status 'EN PROCESO')}}text-info{{else}}text-success{{/if}}">
               {{this.status}}
             </td>
             <td>RD$ {{this.total}}</td>

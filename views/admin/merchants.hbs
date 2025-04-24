@@ -16,7 +16,13 @@
     {{#each merchants}}
       <tr>
         <td>{{merchantName}}</td>
-        <td><img src="/{{logo}}" alt="Logo" width="50"/></td>
+        <td>
+          {{#if merchantLogo}}
+            <img src="/images/{{merchantLogo}}" alt="Logo" width="50"/>
+          {{else}}
+            <span class="text-muted">No Logo</span>
+          {{/if}}
+        </td>
         <td>{{orderCount}}</td>
         <td>{{phone}}</td>
         <td>{{openingTime}} – {{closingTime}}</td>

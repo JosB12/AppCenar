@@ -116,18 +116,42 @@ exports.postDeactivateDelivery = async (req, res, next) => {
   }
 };
 
+// exports.getMerchants = async (req, res, next) => {
+//   try {
+//     const users = await User.findAll({ where: { role: "merchant" } });
+//     const merchants = await Promise.all(users.map(async u => {
+//       const orderCount = await Order.count({ where: { merchantId: u.id } });
+//       return { ...u.get({ plain: true }), orderCount, logo: u.merchantLogo };
+//     }));
+//     res.render("admin/merchants", { pageTitle: "Merchants", merchants });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+// controllers/AdminController.js
+
 exports.getMerchants = async (req, res, next) => {
   try {
     const users = await User.findAll({ where: { role: "merchant" } });
     const merchants = await Promise.all(users.map(async u => {
       const orderCount = await Order.count({ where: { merchantId: u.id } });
-      return { ...u.get({ plain: true }), orderCount, logo: u.profilePhoto };
+      return {
+        ...u.get({ plain: true }),
+        orderCount,
+        merchantLogo: u.merchantLogo    // ← ahora sí
+      };
     }));
-    res.render("admin/merchants", { pageTitle: "Merchants", merchants });
+    res.render("admin/merchants", { 
+      pageTitle: "Merchants", 
+      merchants,
+      csrfToken: req.csrfToken()      // asegúrate de pasarlo si usas CSRF en las forms
+    });
   } catch (err) {
     next(err);
   }
 };
+
 
 exports.postActivateMerchant = async (req, res, next) => {
   try {
@@ -315,14 +339,20 @@ exports.postCreateMerchantType = async (req, res, next) => {
   }
 };
 
+// controllers/AdminController.js
 exports.getEditMerchantType = async (req, res, next) => {
   try {
     const type = await MerchantType.findByPk(req.params.id);
-    res.render("admin/merchant-type-edit", { pageTitle: "Edit Merchant Type", type: type.get({ plain: true }) });
+    res.render("admin/merchant-type-edit", {
+      pageTitle: "Editar Tipo de Comercio",
+      type: type.get({ plain: true }),
+      csrfToken: req.csrfToken()      // ← Aquí
+    });
   } catch (err) {
     next(err);
   }
 };
+
 
 exports.postEditMerchantType = async (req, res, next) => {
   try {
@@ -335,7 +365,7 @@ exports.postEditMerchantType = async (req, res, next) => {
     type.description = req.body.description;
     const iconFile = (req.files || []).find(f => f.fieldname === "icon");
     if (iconFile) {
-      type.icon = iconFile.path;
+      type.icon = iconFile.filename;
     }
     await type.save();
     req.flash("success", "Merchant type updated successfully.");

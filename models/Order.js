@@ -10,9 +10,9 @@ const Order = sequelize.define("order", {
     primaryKey: true,
   },
   status: {
-    type: Sequelize.ENUM("pending", "processing", "completed"),
+    type: Sequelize.ENUM("pendiente", "EN PROCESO", "completado"),
     allowNull: false,
-    defaultValue: "pending"
+    defaultValue: "pendiente"
   },
   orderDateTime: {
     type: Sequelize.DATE,

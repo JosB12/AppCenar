@@ -132,6 +132,7 @@ exports.PostSignup = async (req, res, next) => {
       role,
       active: false,
       activationToken,
+      availability: role === 'delivery' ? 'disponible' : null
     });
 
     // 5. Enviamos correo de activación

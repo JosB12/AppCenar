@@ -7,6 +7,8 @@ const isAuth = require("../middlewares/is-auth");
 // Ruta para el Home del merchant
 router.get("/home", isAuth, merchantController.getHome);
 router.get("/orders/:orderId", isAuth, merchantController.getOrderDetail);
+router.post("/orders/:orderId/assign", isAuth, merchantController.assignDelivery);
+
 
 
 // Ruta para ver el perfil del merchant

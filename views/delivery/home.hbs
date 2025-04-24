@@ -1,28 +1,48 @@
-<h1>Delivery Dashboard</h1>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Merchant</th>
-      <th>Status</th>
-      <th>Total</th>
-      <th># Products</th>
-      <th>When</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
+{{!-- views/delivery/home.hbs --}}
+<div class="container py-4">
+  <h1 class="mb-4">{{pageTitle}}</h1>
+
+  <div class="list-group">
     {{#each orders}}
-    <tr>
-      <td><img src="/{{merchant.merchantLogo}}" width="32" class="me-2"/>{{merchant.merchantName}}</td>
-      <td>{{status}}</td>
-      <td>{{total}}</td>
-      <td>{{orderProducts.length}}</td>
-      <td>{{createdAt}}</td>
-      <td><a href="/delivery/order/{{id}}" class="btn btn-sm btn-primary">View</a></td>
-    </tr>
+      <a
+        href="/delivery/order/{{id}}"
+        class="list-group-item list-group-item-action d-flex align-items-center gap-3 mb-3 shadow-sm rounded text-decoration-none text-dark"
+      >
+        <!-- Logo -->
+        <img
+          src="/images/{{merchant.merchantLogo}}"
+          alt="{{merchant.merchantName}}"
+          class="rounded"
+          style="width:64px; height:64px; object-fit:cover;"
+        >
+
+        <!-- Contenido principal -->
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <!-- Estado + fecha/hora -->
+            <div>
+              <span class="badge {{#if (eq status "EN PROCESO")}}bg-warning text-dark{{else}}bg-success{{/if}}">
+                {{status}}
+              </span>
+                          <small class="text-muted">{{formattedDate}} · {{formattedTime}}</small>
+
+            </div>
+          </div>
+          <!-- Nombre del comercio -->
+          <h5 class="mb-1">{{merchant.merchantName}}</h5>
+          <!-- Total y cantidad -->
+          <div>
+            <span class="fw-bold">RD$ {{total}}</span>
+            <small class="text-muted">· {{orderCount}} productos</small>
+          </div>
+        </div>
+      </a>
     {{/each}}
+
     {{#unless orders.length}}
-    <tr><td colspan="6">No orders assigned yet.</td></tr>
+      <div class="alert alert-info">
+        No tienes pedidos asignados en este momento.
+      </div>
     {{/unless}}
-  </tbody>
-</table>
+  </div>
+</div>

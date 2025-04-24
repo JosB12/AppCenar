@@ -1,23 +1,26 @@
 <main class="container mt-5">
+  
+
   <div class="card shadow p-4">
     <div class="d-flex align-items-center mb-3">
       {{#if order.merchant.merchantLogo}}
-        <img src="/images/{{order.merchant.merchantLogo}}" alt="Logo" width="50" class="rounded-circle mr-3">
+        <img src="/images/{{order.merchant.merchantLogo}}" alt="Logo" width="60" class="rounded-circle mr-3">
       {{/if}}
-      <h4 class="mb-0">{{order.merchant.merchantName}}</h4>
+      <h4 class="mb-0 font-weight-bold">{{order.merchant.merchantName}}</h4>
     </div>
 
     <div class="mb-3">
-      <span class="badge 
-        {{#if (eq order.status 'pending')}}badge-warning
-        {{else if (eq order.status 'processing')}}badge-info
-        {{else}}badge-success{{/if}}">
+      <span class="badge px-3 py-2 text-dark text-uppercase fw-bold"
+        style="background-color:
+          {{#if (eq order.status 'pendiente')}}#ffc107
+          {{else if (eq order.status 'EN PROCESO')}}#17a2b8
+          {{else}}#28a745{{/if}};">
         {{order.status}}
       </span>
-      <p class="mb-0 text-muted">{{order.formattedDate}} - {{order.formattedTime}}</p>
+      <p class="mb-0 text-muted mt-1">{{order.formattedDate}} - {{order.formattedTime}}</p>
     </div>
 
-    <h5>El pedido</h5>
+    <h5 class="mt-4">Productos del pedido</h5>
     <ul class="list-group mb-3">
       {{#each order.order_products}}
         <li class="list-group-item d-flex align-items-center justify-content-between">
@@ -33,15 +36,19 @@
     </ul>
 
     <div class="d-flex justify-content-between">
-      <h5>Total</h5>
-      <h5>RD$ {{order.total}}</h5>
+      <h5 class="mb-0">Total</h5>
+      <h5 class="mb-0 text-success">RD$ {{order.total}}</h5>
     </div>
 
-    {{#if (eq order.status 'pending')}}
-      <form action="/merchant/orders/{{order.id}}/assign" method="POST">
+    {{#if (eq order.status 'pendiente')}}
+      <form action="/merchant/orders/{{order.id}}/assign" method="POST" class="mt-4">
         <input type="hidden" name="_csrf" value="{{csrfToken}}">
-        <button class="btn btn-danger btn-block mt-3">Asignar delivery</button>
+        <button class="btn btn-danger btn-block">Asignar delivery</button>
       </form>
     {{/if}}
+
+    <a href="/merchant/home" class="btn btn-outline-secondary btn-block mt-3">
+      ← Volver al inicio
+    </a>
   </div>
 </main>
