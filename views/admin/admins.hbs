@@ -1,6 +1,7 @@
 {{!-- views/admin/admins.hbs --}}
 <h1>Listado de Administradores</h1>
 <a href="/admin/admins/new" class="btn btn-success mb-3">Crear Administrador</a>
+
 <table class="table table-striped">
   <thead>
     <tr>
@@ -22,19 +23,78 @@
         <td>{{email}}</td>
         <td>
           <a href="/admin/admins/{{id}}/edit" class="btn btn-sm btn-primary">Editar</a>
+
           {{#if active}}
-            <form action="/admin/admins/{{id}}/deactivate" method="POST" class="d-inline">
-              <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
-              <button class="btn btn-sm btn-warning">Inactivar</button>
-            </form>
+            <button 
+              class="btn btn-sm btn-warning btn-toggle-status" 
+              data-action="deactivate" 
+              data-id="{{id}}" 
+              data-name="{{firstName}} {{lastName}}"
+            >Inactivar</button>
           {{else}}
-            <form action="/admin/admins/{{id}}/activate" method="POST" class="d-inline">
-              <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
-              <button class="btn btn-sm btn-success">Activar</button>
-            </form>
+            <button 
+              class="btn btn-sm btn-success btn-toggle-status" 
+              data-action="activate" 
+              data-id="{{id}}"
+              data-name="{{firstName}} {{lastName}}"
+            >Activar</button>
           {{/if}}
         </td>
       </tr>
     {{/each}}
   </tbody>
 </table>
+
+{{!-- Modal único para confirmación --}}
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="confirmModalLabel" class="modal-title">Confirmación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage">¿Estás seguro?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <form id="confirmForm" method="POST" class="d-inline">
+          <input type="hidden" name="_csrf" value="{{csrfToken}}">
+          <button type="submit" id="confirmYes" class="btn btn-danger">Sí</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.btn-toggle-status').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-action');      // "activate" o "deactivate"
+      const id     = btn.getAttribute('data-id');
+      const name   = btn.getAttribute('data-name');
+      const form   = document.getElementById('confirmForm');
+      const msg    = document.getElementById('confirmMessage');
+      const yesBtn = document.getElementById('confirmYes');
+
+      // Ajusta la acción del form según el botón
+      form.action = `/admin/admins/${id}/${action}`;
+
+      // Cambia texto y estilo del botón Sí
+      if (action === 'deactivate') {
+        msg.textContent = `¿Estás seguro que deseas inactivar al usuario "${name}"?`;
+        yesBtn.classList.remove('btn-success');
+        yesBtn.classList.add('btn-warning');
+        yesBtn.textContent = 'Inactivar';
+      } else {
+        msg.textContent = `¿Estás seguro que deseas activar al usuario "${name}"?`;
+        yesBtn.classList.remove('btn-warning');
+        yesBtn.classList.add('btn-success');
+        yesBtn.textContent = 'Activar';
+      }
+
+      // Muestra el modal
+      new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    });
+  });
+</script>

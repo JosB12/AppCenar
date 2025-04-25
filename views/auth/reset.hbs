@@ -1,26 +1,45 @@
-<main class="form-signin">
-  <form action="/reset" method="POST">
-    <!-- Token CSRF para protección -->
-    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
-    
-    <h1 class="h3 mb-3 fw-normal">Reset password</h1>
-
-    <!-- Campo para ingresar el email -->
-    <div class="form-floating">
-      <input
-        type="email"
-        class="form-control"
-        name="email"
-        id="floatingInput"
-        placeholder="name@example.com"
-        required
-      />
-      <label for="floatingInput">Email address</label>
+{{!-- views/auth/reset.hbs --}}
+<main class="d-flex align-items-center justify-content-center vh-100 bg-light">
+  <div class="card shadow-sm" style="max-width: 420px; width: 100%;">
+    <div class="card-header bg-info text-white text-center py-3">
+      <h2 class="h5 mb-0">Restablecer contraseña</h2>
     </div>
+    <div class="card-body p-4">
+      {{#if errorMessages}}
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            {{#each errorMessages}}
+              <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+      <form action="/reset" method="POST" novalidate>
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
-    <!-- Botón para enviar el formulario -->
-    <button class="w-100 btn btn-lg btn-primary margin-top-2" type="submit">Reset</button>
-    <!-- Enlace para volver al login -->
-    <a href="/login" class="w-100 btn btn-lg btn-warning margin-top-2">Back</a>
-  </form>
+        <div class="form-floating mb-4">
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            placeholder="nombre@ejemplo.com"
+            required
+          >
+          <label for="email">Correo electrónico</label>
+        </div>
+
+        <button type="submit" class="btn btn-info w-100 py-2 mb-3">
+          Enviar enlace de restablecimiento
+        </button>
+
+        <a href="/login" class="d-block text-center text-decoration-none text-secondary small">
+          ← Volver al inicio de sesión
+        </a>
+      </form>
+    </div>
+    <div class="card-footer text-center small text-muted">
+      ¿No recibiste el correo? Revisa tu carpeta de spam o <a href="/reset" class="text-info">intenta de nuevo</a>.
+    </div>
+  </div>
 </main>

@@ -1,6 +1,7 @@
 {{!-- views/admin/merchant-types.hbs --}}
 <h1>Listado de Tipos de Comercios</h1>
 <a href="/admin/merchant-types/new" class="btn btn-success mb-3">Crear Tipo de Comercio</a>
+
 <table class="table table-striped">
   <thead>
     <tr>
@@ -20,12 +21,51 @@
         <td>{{merchantCount}}</td>
         <td>
           <a href="/admin/merchant-types/{{id}}/edit" class="btn btn-sm btn-primary">Editar</a>
-          <form action="/admin/merchant-types/{{id}}/delete" method="POST" class="d-inline">
-            <input type="hidden" name="_csrf" value="{{../csrfToken}}" />
-            <button class="btn btn-sm btn-danger">Eliminar</button>
-          </form>
+          <button
+            class="btn btn-sm btn-danger btn-delete-type"
+            data-id="{{id}}"
+            data-name="{{name}}"
+          >Eliminar</button>
         </td>
       </tr>
     {{/each}}
   </tbody>
 </table>
+
+{{!-- Modal de confirmación --}}
+<div class="modal fade" id="deleteTypeModal" tabindex="-1" aria-labelledby="deleteTypeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="deleteTypeLabel" class="modal-title">Confirmar Eliminación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteTypeMessage">¿Estás seguro de eliminar este tipo de comercio?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <form id="deleteTypeForm" method="POST" class="d-inline">
+          <input type="hidden" name="_csrf" value="{{csrfToken}}">
+          <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.btn-delete-type').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      const name = btn.getAttribute('data-name');
+      const form = document.getElementById('deleteTypeForm');
+      const msg  = document.getElementById('deleteTypeMessage');
+
+      form.action = `/admin/merchant-types/${id}/delete`;
+      msg.textContent = `¿Estás seguro que deseas eliminar el tipo de comercio "${name}"?`;
+
+      new bootstrap.Modal(document.getElementById('deleteTypeModal')).show();
+    });
+  });
+</script>

@@ -1,44 +1,58 @@
-<main class="form-signin">
-  <form action="/login" method="POST">
-    <!-- Campo oculto para el token CSRF -->
-    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
-
-    <!-- Título de la vista -->
-    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-
-    <!-- Campo para el email con el estilo Bootstrap "form-floating" -->
-    <div class="form-floating">
-      <input
-        type="email"
-        class="form-control"
-        name="email"
-        id="floatingInput"
-        placeholder="name@example.com"
-        required
-      />
-      <label for="floatingInput">Email address</label>
+{{!-- views/auth/login.hbs --}}
+<main class="d-flex align-items-center justify-content-center vh-100 bg-light">
+  <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+    <div class="text-center mb-4">
+      {{!-- Aquí podrías colocar tu logo --}}
+      <h1 class="h4 fw-bold">Iniciar Sesión</h1>
     </div>
 
-    <!-- Campo para la contraseña -->
-    <div class="form-floating">
-      <input
-        type="password"
-        class="form-control"
-        name="password"
-        id="floatingPassword"
-        placeholder="Password"
-        required
-      />
-      <label for="floatingPassword">Password</label>
-    </div>
+    {{!-- Mensajes de error --}}
+    {{#if errorMessages}}
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          {{#each errorMessages}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+    {{/if}}
 
-    <!-- Botón para enviar el formulario -->
-    <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+    <form action="/login" method="POST" novalidate>
+      <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
-    <!-- Enlace para resetear contraseña -->
-    <a href="/reset" class="w-100 btn btn-lg btn-success margin-top-2">Reset</a>
-    <!-- Botón para ir a la página de registro -->
-    <a href="/signup" class="w-100 btn btn-lg btn-info margin-top-2">Registro usuario</a>
-    <a href="/signupAsMerchant" class="w-100 btn btn-lg btn-warning margin-top-2">Registro como comercio</a>
-  </form>
+      <div class="form-floating mb-3">
+        <input
+          type="email"
+          class="form-control"
+          id="floatingInput"
+          name="email"
+          placeholder="correo@ejemplo.com"
+          required
+        >
+        <label for="floatingInput">Correo electrónico</label>
+      </div>
+
+      <div class="form-floating mb-4">
+        <input
+          type="password"
+          class="form-control"
+          id="floatingPassword"
+          name="password"
+          placeholder="Contraseña"
+          required
+        >
+        <label for="floatingPassword">Contraseña</label>
+      </div>
+
+      <button class="w-100 btn btn-primary btn-lg mb-3" type="submit">
+        Entrar
+      </button>
+
+      <div class="d-flex justify-content-between">
+        <a href="/reset" class="btn btn-sm btn-outline-secondary">¿Olvidaste tu contraseña?</a>
+        <a href="/signup" class="btn btn-sm btn-outline-info">Registro Cliente</a>
+        <a href="/signupAsMerchant" class="btn btn-sm btn-outline-warning">Registro Comercio</a>
+      </div>
+    </form>
+  </div>
 </main>
